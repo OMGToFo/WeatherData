@@ -51,7 +51,7 @@ if 'checkWeather' not in st.session_state:
 
 ########################################
 
-
+_ = """
 # find nearest weatherstation - based on ip location and set this as default
 import geocoder
 import reverse_geocoder as rg
@@ -70,7 +70,7 @@ nearestWeatherstation = weatherstation_data['name'].iloc[0]
 # st.write("stationNearby: ",stationNearby)
 
 
-_ = """
+
 from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="nearest-town-finder")
 location = geolocator.reverse((lat, long), exactly_one=True)
@@ -101,7 +101,7 @@ from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="MyApp")
 
 st.write("")
-Ortseingabe = st.text_input("Enter location:", value=nearestWeatherstation)
+Ortseingabe = st.text_input("Enter location:", value='Zurich')
 st.write("")
 
 location = geolocator.geocode(Ortseingabe)
