@@ -4,7 +4,7 @@ matplotlib==3.8.1
 meteostat==1.6.5
 pandas==1.4.4
 plotly==5.18.0
-prophet==1.1.1
+prophet
 reverse_geocoder==1.5.1
 seaborn==0.11.2
 statsmodels==0.13.2
