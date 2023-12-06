@@ -1,7 +1,9 @@
 import streamlit as st
 import pandas as pd
 from datetime import date, datetime
+
 from meteostat import Point, Daily
+from meteostat import Stations
 
 from datetime import timedelta
 
@@ -16,6 +18,15 @@ from matplotlib import pyplot as plt
 
 import plotly.express as px
 import plotly.graph_objects as go
+
+
+# Import the required library
+from geopy.geocoders import Nominatim
+
+# Initialize Nominatim API
+geolocator = Nominatim(user_agent="MyApp")
+
+
 
 st.set_page_config(layout="wide")
 
@@ -94,11 +105,7 @@ last_year = today - timedelta(days=365 * 5)
 # st.write("last_year: ", last_year)
 
 
-# Import the required library
-from geopy.geocoders import Nominatim
 
-# Initialize Nominatim API
-geolocator = Nominatim(user_agent="MyApp")
 
 st.write("")
 Ortseingabe = st.text_input("Enter location:", value='Zurich')
@@ -106,7 +113,6 @@ st.write("")
 
 location = geolocator.geocode(Ortseingabe)
 
-from meteostat import Stations
 
 stations = Stations()
 stations = stations.nearby(location.latitude, location.longitude)
@@ -279,7 +285,12 @@ if checkButton:
     st.line_chart(pres_data, use_container_width=True)
     """
 
-    # FORECASTING mit Prophet #################################
+
+
+
+
+
+    # FORECASTING mit Prophet #############################################################################################
     if (len(data)) > 20:
         st.sidebar.subheader("")
         st.sidebar.divider()
