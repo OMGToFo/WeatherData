@@ -23,7 +23,7 @@ st.set_page_config(layout="wide")
 
 
 st.title("Simple Weather Data")
-st.info("Sources - historical data: https://meteostat.net, actual and forecast data: https://open-meteo.com ")
+st.info("Sources - historical data: https://meteostat.net, current data: https://open-meteo.com ")
 
 
 
@@ -33,7 +33,7 @@ st.info("Sources - historical data: https://meteostat.net, actual and forecast d
 
 option = option_menu(
 	menu_title="",
-	options=["Today's weather", "This week's weather","Weather history","Weather prediction"],
+	options=["Today", "This week","History","Prediction"],
 	icons=["calendar-event", "calendar-week","clock-history","pip"], #https://icons.getbootstrap.com/
 	orientation="horizontal",
 )
@@ -52,7 +52,7 @@ div.stButton > button:first-child {
     background-color: #ce1126;
     color: white;
     height: 3em;
-    width: 14em;
+    width: 10em;
     border-radius:10px;
     border:3px solid #000000;
     font-size:20px;
@@ -70,7 +70,7 @@ div.stButton > button:active {
 }
 </style>""", unsafe_allow_html=True)
 
-# === Variablesm session state ====#
+# === Variables mit session state ====#
 
 if 'checkWeather' not in st.session_state:
     st.session_state.checkWeather = False
@@ -231,7 +231,7 @@ with st.sidebar.form("Enter Location"): ########################################
 
     st.subheader("")
     #checkButton = st.form_submit_button("Check weather data!") ###########################
-    st.session_state.checkWeather = st.form_submit_button("Check weather!")
+    st.session_state.checkWeather = st.form_submit_button("Check!")
     st.subheader("")
 
 #if checkButton == True:
@@ -331,7 +331,7 @@ if st.session_state.checkWeather == True:
 
     current_rain_text =  str(round(current_rain,1)) + " mm"
 
-    if option == "Today's weather": ############################
+    if option == "Today": ############################
 
         st.subheader("")
         st.subheader("Today's weather forecast data for " + Ortseingabe)
@@ -386,7 +386,7 @@ if st.session_state.checkWeather == True:
 
 
         hourly_dataframe = pd.DataFrame(data=hourly_data)
-        st.info("Hourly data")
+        st.info("Hourly data from Open-Meteo.com")
 
         hourlyExpander = st.expander("Tables with hourly data for 3 days >>>")
         with hourlyExpander:
@@ -435,7 +435,7 @@ if st.session_state.checkWeather == True:
 
 
 
-    if option == "This week's weather": ############################
+    if option == "This week": ############################
 
         # Process daily data. The order of variables needs to be the same as requested.
         daily = response.Daily()
@@ -481,7 +481,7 @@ if st.session_state.checkWeather == True:
         daily_dataframe = daily_dataframe.sort_values(by='date')
 
         st.subheader("This week's weather forecast for " + Ortseingabe)
-        st.info("Daily data")
+        st.info("Daily data from Open-Meteo.com")
 
         dailyExpander = st.expander("Tables with data data for this week >>>")
         with dailyExpander:
@@ -646,7 +646,7 @@ if st.session_state.checkWeather == True:
 
 
 
-    if option == "Weather history": ############################
+    if option == "History": ############################
 
         st.subheader("")
         st.title("Historical data for " + Ortseingabe)
@@ -666,7 +666,7 @@ if st.session_state.checkWeather == True:
 
         data_Yearsnow = data.groupby('Year').agg({'snow': 'mean'})['snow']
 
-        st.info("Yearly Averages")
+        st.info("Yearly Averages from Meteostat.net")
 
         if len(data_YearAvg) > 1:
             col1, col2, col3, col4, col5, col6 = st.columns(6)
@@ -753,7 +753,7 @@ if st.session_state.checkWeather == True:
 
     # FORECASTING mit Prophet ##############################################################
 
-    if option == "Weather prediction": ############################
+    if option == "Prediction": ############################
         if ProphetforecastStarten:
             #st.sidebar.subheader("")
             #st.sidebar.divider()
