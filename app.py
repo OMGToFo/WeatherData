@@ -145,6 +145,7 @@ with st.sidebar.form("Enter Location"): ########################################
 
     st.write("")
     Ortseingabe = st.text_input("Enter location:", value=st.session_state.ortsEingabeSpeicher)
+    st.session_state.ortsEingabeSpeicher = Ortseingabe
     st.write("")
 
     location = geolocator.geocode(Ortseingabe)
@@ -163,10 +164,8 @@ with st.sidebar.form("Enter Location"): ########################################
     locationInfoExpander = st.sidebar.expander("Location info")
     with locationInfoExpander:
         st.write(location.raw)
-
         st.write("The latitude of the location is: ", location.latitude)
         st.write("The longitude of the location is: ", location.longitude)
-
         st.write("Nearest Weather Station (Meteostat): ", weatherstation_data)
 
 
@@ -182,16 +181,17 @@ with st.sidebar.form("Enter Location"): ########################################
     st.sidebar.map(df_mapOrte, latitude='LATITUDEPOINTS', longitude='LONGITUDEPOINTS',size=40)
 
 
+    historySettingsExpander = st.expander("History settings")
+    with historySettingsExpander:
+        #st.write("History settings")
 
+        startInput = st.date_input("Start Date", date(2018, 1, 1), key="start")
+        # startInput = st.date_input("Start Date",last_year, key="start")
 
+        # endInput = st.date_input("End Date", date(2023, 7, 22))
+        endInput = st.date_input("End Date", today, key="end")
 
-    startInput = st.date_input("Start Date", date(2018, 1, 1), key="start")
-    # startInput = st.date_input("Start Date",last_year, key="start")
-
-    # endInput = st.date_input("End Date", date(2023, 7, 22))
-    endInput = st.date_input("End Date", today, key="end")
-
-    heightInput = st.number_input('Elevation (default - elevation of weather station)',
+        heightInput = st.number_input('Elevation (default - elevation of weather station)',
                                   value=nearestWeatherstation_elevation)
 
     # Convert datetime.date objects to datetime.datetime objects
@@ -202,39 +202,36 @@ with st.sidebar.form("Enter Location"): ########################################
 
     data = Daily(Ort, startInput, endInput)
 
-    st.subheader("")
-    st.sidebar.subheader("")
     #ProphetforecastStarten = st.toggle("Forecast with Prophet", key="forecast")
     ProphetforecastStarten= True
 
-    st.divider()
-    st.write("Forecast settings")
 
-    fcol2, fcol3 = st.columns(2)
+    forecastSettingsExpander = st.expander("Prediction settings")
+    with forecastSettingsExpander:
+        st.write("Prophet Forecast")
 
+        fcol2, fcol3 = st.columns(2)
 
+        forecastHorizon = st.slider("Periods", min_value=1, value=st.session_state.forecastHorizonSpeicher)
+        st.session_state.forecastHorizonSpeicher = forecastHorizon
 
-
-    forecastHorizon = st.slider("Periods", min_value=1, value=st.session_state.forecastHorizonSpeicher)
-    st.session_state.forecastHorizonSpeicher = forecastHorizon
-
-    with fcol2:
-        freqEingabe = st.selectbox("Frequency", ["D", "W", "M", "Q", "Y"],
+        with fcol2:
+            freqEingabe = st.selectbox("Frequency", ["D", "W", "M", "Q", "Y"],
                                    index=2)
 
-    # using pop(0) to perform removal of first item
-    # forecastValueListe.pop(0)
+        # using pop(0) to perform removal of first item
+        # forecastValueListe.pop(0)
 
-    with fcol3:
-        #forecastValueListe = data.columns.to_list()
-        forecastVariable = st.selectbox("Variable", ["tavg", "tmin","tmax","prcp","snow","wspd"],index=0)
+        with fcol3:
+            #forecastValueListe = data.columns.to_list()
+            forecastVariable = st.selectbox("Variable", ["tavg", "tmin","tmax","prcp","snow","wspd"],index=0)
 
-    st.divider()
+
 
 
     st.subheader("")
     #checkButton = st.form_submit_button("Check weather data!") ###########################
-    st.session_state.checkWeather = st.form_submit_button("Check weather data!")
+    st.session_state.checkWeather = st.form_submit_button("Check weather!")
     st.subheader("")
 
 #if checkButton == True:
