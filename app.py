@@ -19,11 +19,39 @@ import plotly.graph_objects as go
 
 from streamlit_option_menu import option_menu
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Simple weather data", page_icon="🌤️", layout="wide", initial_sidebar_state="auto")
 
 
-st.title("Simple Weather Data")
-st.info("Sources - historical data: https://meteostat.net, current data: https://open-meteo.com ")
+
+
+# === Variables mit session state ====#
+
+if 'checkWeather' not in st.session_state:
+    st.session_state.checkWeather = False
+
+if 'forecastHorizonSpeicher' not in st.session_state:
+    st.session_state.forecastHorizonSpeicher = 24
+if 'forecastFreqSpeicher' not in st.session_state:
+    st.session_state.forecastFreqSpeicher = "M"
+if 'forecastVariableSpeicher' not in st.session_state:
+    st.session_state.forecastVariableSpeicher = "tavg"
+
+if 'ortsEingabeSpeicher' not in st.session_state:
+    st.session_state.ortsEingabeSpeicher = "Zurich"
+
+#####################################################
+
+
+#st.title("Simple Weather Data")
+#st.info("Sources - historical data: https://meteostat.net, current data: https://open-meteo.com ")
+
+col1, col2 = st.columns([3, 10])
+with col1:
+    Ortseingabe = st.text_input("", value=st.session_state.ortsEingabeSpeicher)
+    st.session_state.ortsEingabeSpeicher = Ortseingabe
+with col2:
+    st.title("Simple Weather Data")
+    #st.write("")
 
 
 
@@ -44,46 +72,34 @@ import requests_cache
 
 from retry_requests import retry
 
-
+if 1 ==0:
 # Code um den Button-Design anzupassen
-m = st.markdown("""
-<style>
-div.stButton > button:first-child {
-    background-color: #ce1126;
-    color: white;
-    height: 3em;
-    width: 10em;
-    border-radius:10px;
-    border:3px solid #000000;
-    font-size:20px;
-    font-weight: bold;
-    margin: auto;
-    display: block;
-}
-div.stButton > button:hover {
-	background:linear-gradient(to bottom, #ce1126 5%, #ff5a5a 100%);
-	background-color:#ce1126;
-}
-div.stButton > button:active {
-	position:relative;
-	top:3px;
-}
-</style>""", unsafe_allow_html=True)
+    m = st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        background-color: #ce1126;
+        color: white;
+        height: 3em;
+        width: 10em;
+        border-radius:10px;
+        border:3px solid #000000;
+        font-size:20px;
+        font-weight: bold;
+        margin: auto;
+        display: block;
+    }
+    div.stButton > button:hover {
+        background:linear-gradient(to bottom, #ce1126 5%, #ff5a5a 100%);
+        background-color:#ce1126;
+    }
+    div.stButton > button:active {
+        position:relative;
+        top:3px;
+    }
+    </style>""", unsafe_allow_html=True)
 
-# === Variables mit session state ====#
 
-if 'checkWeather' not in st.session_state:
-    st.session_state.checkWeather = False
 
-if 'forecastHorizonSpeicher' not in st.session_state:
-    st.session_state.forecastHorizonSpeicher = 24
-if 'forecastFreqSpeicher' not in st.session_state:
-    st.session_state.forecastFreqSpeicher = "M"
-if 'forecastVariableSpeicher' not in st.session_state:
-    st.session_state.forecastVariableSpeicher = "tavg"
-
-if 'ortsEingabeSpeicher' not in st.session_state:
-    st.session_state.ortsEingabeSpeicher = "Zurich"
 
 
 
@@ -141,11 +157,10 @@ from meteostat import Stations
 geolocator = Nominatim(user_agent="MyApp")
 
 
-with st.sidebar.form("Enter Location"): ##############################################
+with st.sidebar.form("Settings"): ##############################################
 
     st.write("")
-    Ortseingabe = st.text_input("Enter location:", value=st.session_state.ortsEingabeSpeicher)
-    st.session_state.ortsEingabeSpeicher = Ortseingabe
+
     st.write("")
 
     location = geolocator.geocode(Ortseingabe)
@@ -231,11 +246,16 @@ with st.sidebar.form("Enter Location"): ########################################
 
     st.subheader("")
     #checkButton = st.form_submit_button("Check weather data!") ###########################
-    st.session_state.checkWeather = st.form_submit_button("Check!")
+    applySettings = st.form_submit_button("Apply Settings")
     st.subheader("")
 
+
+
+
+
 #if checkButton == True:
-if st.session_state.checkWeather == True:
+#if st.session_state.checkWeather == True:
+if st.session_state.ortsEingabeSpeicher != "":
     st.session_state.ortsEingabeSpeicher = Ortseingabe
 
     data = data.fetch()
@@ -331,7 +351,7 @@ if st.session_state.checkWeather == True:
 
     current_rain_text =  str(round(current_rain,1)) + " mm"
 
-    if option == "Today": ############################
+    if option == "Today": #########################################################################
 
         st.subheader("")
         st.subheader("Today's weather forecast data for " + Ortseingabe)
@@ -393,7 +413,7 @@ if st.session_state.checkWeather == True:
             st.write(hourly_dataframe)
 
 
-        hourlyCols1, hourCols2 = st.columns(2)
+        hourlyCols1, hourlyCols2 = st.columns(2)
 
         with hourlyCols1:
             st.info("Today's Temperatures")
@@ -403,7 +423,18 @@ if st.session_state.checkWeather == True:
             todaytemp_data = todaytemp_data.head(24)
             st.line_chart(todaytemp_data.temperature_2m,use_container_width=True)
 
-        with hourCols2:
+
+        with hourlyCols2:
+            st.info("Today's wind")
+            todaywind_data = pd.DataFrame(
+                hourly_dataframe,
+                columns=['date','wind_speed_10m'])
+            todaywind_data = todaywind_data.head(24)
+            st.line_chart(todaywind_data.wind_speed_10m,use_container_width=True)
+
+
+        hourlyCols3, hourlyCols4 = st.columns(2)
+        with hourlyCols3:
             todayrain_data = pd.DataFrame(
                 hourly_dataframe,
                 columns=['date','rain'])
@@ -412,16 +443,9 @@ if st.session_state.checkWeather == True:
             if todayRainVorkommen:
                 st.info("Today's rain")
                 st.bar_chart(todayrain_data.rain,use_container_width=True)
+            else:
+                st.success("No rain today")
 
-
-        hourlyCols3, hourlyCols4 = st.columns(2)
-        with hourlyCols3:
-            st.info("Today's wind")
-            todaywind_data = pd.DataFrame(
-                hourly_dataframe,
-                columns=['date','wind_speed_10m'])
-            todaywind_data = todaywind_data.head(24)
-            st.line_chart(todaywind_data.wind_speed_10m,use_container_width=True)
 
         with hourlyCols4:
             todaysnow_data = pd.DataFrame(
@@ -430,12 +454,18 @@ if st.session_state.checkWeather == True:
             todaysnow_data = todaysnow_data.head(24)
             todaysnowVorkommen = todaysnow_data.snowfall.sum()
             if todaysnowVorkommen > 0:
+                st.snow()
                 st.info("Today's snowfall")
                 st.bar_chart(todaysnow_data.snowfall,use_container_width=True)
+            else:
+                st.warning("No snow today")
 
 
 
-    if option == "This week": ############################
+
+
+
+    if option == "This week": #################################################################
 
         # Process daily data. The order of variables needs to be the same as requested.
         daily = response.Daily()
@@ -518,9 +548,70 @@ if st.session_state.checkWeather == True:
             st.plotly_chart(figPlotlyLinechart_weektemp_data, use_container_width=True)
 
 
-
-
         with dailyCols2:
+            st.info("This week's max wind speeds")
+            weekWind_data = pd.DataFrame(
+                daily_dataframe,
+                columns=['weekday','wind_speed_10m_max'])
+
+            figPlotlyLinechart_weekWind_data = px.line(weekWind_data, x='weekday',
+                                                       y='wind_speed_10m_max', line_shape='linear',
+                                                       # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
+                                                       # markers=True,
+                                                       # Animation:
+                                                       # range_x=[0, gesamtBudget*1000],
+                                                       #range_y=[0, forecastYhatMax],
+                                                       # animation_frame="ds)
+                                                       )
+
+            # Change grid color and axis colors
+            figPlotlyLinechart_weekWind_data.update_xaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                          gridcolor='Black')
+            figPlotlyLinechart_weekWind_data.update_yaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                          gridcolor='Black')
+
+            figPlotlyLinechart_weekWind_data.layout.update(showlegend=False)
+
+            st.plotly_chart(figPlotlyLinechart_weekWind_data, use_container_width=True)
+
+
+
+        dailyCols3, dailyCols4 = st.columns(2)
+
+        #wind_speed_10m_max
+
+
+        with dailyCols3:
+                #sunshine_duration
+
+                st.info("This week's sunshine")
+                weeksunshine_data = pd.DataFrame(
+                    daily_dataframe,
+                    columns=['weekday', 'sunshine_duration'])
+
+                figPlotlyLinechart_weeksunshine_data = px.bar(weeksunshine_data, x='weekday',
+                                                          y=weeksunshine_data.sunshine_duration/3600,  # line_shape='linear',
+                                                          # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
+                                                          # markers=True,
+                                                          # Animation:
+                                                          # range_x=[0, gesamtBudget*1000],
+                                                          # range_y=[0, forecastYhatMax],
+                                                          # animation_frame="ds)
+                                                          )
+
+                # Change grid color and axis colors
+                figPlotlyLinechart_weeksunshine_data.update_xaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                              gridcolor='Black')
+                figPlotlyLinechart_weeksunshine_data.update_yaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                              gridcolor='Black')
+
+                figPlotlyLinechart_weeksunshine_data.layout.update(showlegend=False)
+
+                st.plotly_chart(figPlotlyLinechart_weeksunshine_data, use_container_width=True)
+
+
+
+        with dailyCols4:
             weekrain_data = pd.DataFrame(
                 daily_dataframe,
                 columns=['weekday','rain_sum'])
@@ -551,93 +642,38 @@ if st.session_state.checkWeather == True:
                 st.plotly_chart(figPlotlyBarchart_weekrain_data, use_container_width=True)
 
 
-        dailyCols3, dailyCols4 = st.columns(2)
-
-        #wind_speed_10m_max
-
-        with dailyCols3:
-            st.info("This week's max wind speeds")
-            weekWind_data = pd.DataFrame(
-                daily_dataframe,
-                columns=['weekday','wind_speed_10m_max'])
-
-            figPlotlyLinechart_weekWind_data = px.line(weekWind_data, x='weekday',
-                                                       y='wind_speed_10m_max', line_shape='linear',
-                                                       # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
-                                                       # markers=True,
-                                                       # Animation:
-                                                       # range_x=[0, gesamtBudget*1000],
-                                                       #range_y=[0, forecastYhatMax],
-                                                       # animation_frame="ds)
-                                                       )
-
-            # Change grid color and axis colors
-            figPlotlyLinechart_weekWind_data.update_xaxes(showline=True, linewidth=0.1, linecolor='Black',
-                                                          gridcolor='Black')
-            figPlotlyLinechart_weekWind_data.update_yaxes(showline=True, linewidth=0.1, linecolor='Black',
-                                                          gridcolor='Black')
-
-            figPlotlyLinechart_weekWind_data.layout.update(showlegend=False)
-
-            st.plotly_chart(figPlotlyLinechart_weekWind_data, use_container_width=True)
+        dailyCols5, dailyCols6 = st.columns(2)
 
 
-        with dailyCols4:
-            st.info("This week's snow falls")
+        with dailyCols5:
+
             weeksnowfall_data = pd.DataFrame(
                 daily_dataframe,
                 columns=['weekday','snowfall_sum'])
-
-            figPlotlyLinechart_weekSnow_data = px.bar(weeksnowfall_data, x='weekday',
-                                                       y='snowfall_sum', #line_shape='linear',
-                                                       # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
-                                                       # markers=True,
-                                                       # Animation:
-                                                       # range_x=[0, gesamtBudget*1000],
-                                                       #range_y=[0, forecastYhatMax],
-                                                       # animation_frame="ds)
-                                                       )
-
-            # Change grid color and axis colors
-            figPlotlyLinechart_weekSnow_data.update_xaxes(showline=True, linewidth=0.1, linecolor='Black',
-                                                          gridcolor='Black')
-            figPlotlyLinechart_weekSnow_data.update_yaxes(showline=True, linewidth=0.1, linecolor='Black',
-                                                          gridcolor='Black')
-
-            figPlotlyLinechart_weekSnow_data.layout.update(showlegend=False)
-
-            st.plotly_chart(figPlotlyLinechart_weekSnow_data, use_container_width=True)
-
-
-
-        dailyCols5, dailyCols6 = st.columns(2)
-        with dailyCols5:
-                #sunshine_duration
-
-                st.info("This week's sunshine")
-                weeksunshine_data = pd.DataFrame(
-                    daily_dataframe,
-                    columns=['weekday', 'sunshine_duration'])
-
-                figPlotlyLinechart_weeksunshine_data = px.bar(weeksunshine_data, x='weekday',
-                                                          y=weeksunshine_data.sunshine_duration/3600,  # line_shape='linear',
-                                                          # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
-                                                          # markers=True,
-                                                          # Animation:
-                                                          # range_x=[0, gesamtBudget*1000],
-                                                          # range_y=[0, forecastYhatMax],
-                                                          # animation_frame="ds)
-                                                          )
+            thisWeeksnowVorkommen = weeksnowfall_data.snowfall_sum.sum()
+            if thisWeeksnowVorkommen > 0:
+                st.snow()
+                st.info("This week's snow falls")
+                figPlotlyLinechart_weekSnow_data = px.bar(weeksnowfall_data, x='weekday',
+                                                           y='snowfall_sum', #line_shape='linear',
+                                                           # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
+                                                           # markers=True,
+                                                           # Animation:
+                                                           # range_x=[0, gesamtBudget*1000],
+                                                           #range_y=[0, forecastYhatMax],
+                                                           # animation_frame="ds)
+                                                           )
 
                 # Change grid color and axis colors
-                figPlotlyLinechart_weeksunshine_data.update_xaxes(showline=True, linewidth=0.1, linecolor='Black',
+                figPlotlyLinechart_weekSnow_data.update_xaxes(showline=True, linewidth=0.1, linecolor='Black',
                                                               gridcolor='Black')
-                figPlotlyLinechart_weeksunshine_data.update_yaxes(showline=True, linewidth=0.1, linecolor='Black',
+                figPlotlyLinechart_weekSnow_data.update_yaxes(showline=True, linewidth=0.1, linecolor='Black',
                                                               gridcolor='Black')
 
-                figPlotlyLinechart_weeksunshine_data.layout.update(showlegend=False)
+                figPlotlyLinechart_weekSnow_data.layout.update(showlegend=False)
 
-                st.plotly_chart(figPlotlyLinechart_weeksunshine_data, use_container_width=True)
+                st.plotly_chart(figPlotlyLinechart_weekSnow_data, use_container_width=True)
+
 
         with dailyCols6:
                 st.write("")
