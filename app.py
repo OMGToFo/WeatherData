@@ -61,7 +61,7 @@ with col2:
 
 option = option_menu(
 	menu_title="",
-	options=["Today", "This week","History","Prediction"],
+	options=["Today", "Week","History","Prediction"],
 	icons=["calendar-event", "calendar-week","clock-history","pip"], #https://icons.getbootstrap.com/
 	orientation="horizontal",
 )
@@ -425,11 +425,13 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
         with hourlyCols2:
-            st.info("Today's wind")
+
             todaywind_data = pd.DataFrame(
                 hourly_dataframe,
                 columns=['date','wind_speed_10m'])
             todaywind_data = todaywind_data.head(24)
+            todaywindMean = todaywind_data.wind_speed_10m.mean().round(1)
+            st.info("Today's wind (mean: " + str(todaywindMean) + "m/s)")
             st.line_chart(todaywind_data.wind_speed_10m,use_container_width=True)
 
 
@@ -441,7 +443,7 @@ if st.session_state.ortsEingabeSpeicher != "":
             todayrain_data = todayrain_data.head(24)
             todayRainVorkommen = todayrain_data.rain.sum()
             if todayRainVorkommen:
-                st.info("Today's rain")
+                st.info("Today's rain (sum: " + str(todayRainVorkommen) + "mm)")
                 st.bar_chart(todayrain_data.rain,use_container_width=True)
             else:
                 st.success("No rain today")
@@ -458,14 +460,14 @@ if st.session_state.ortsEingabeSpeicher != "":
                 st.info("Today's snowfall")
                 st.bar_chart(todaysnow_data.snowfall,use_container_width=True)
             else:
-                st.warning("No snow today")
+                st.write("")
 
 
 
 
 
 
-    if option == "This week": #################################################################
+    if option == "Week": #################################################################
 
         # Process daily data. The order of variables needs to be the same as requested.
         daily = response.Daily()
@@ -544,6 +546,7 @@ if st.session_state.ortsEingabeSpeicher != "":
                                                           gridcolor='Black')
 
             figPlotlyLinechart_weektemp_data.layout.update(showlegend=True)
+            figPlotlyLinechart_weektemp_data.update_layout(legend=dict(yanchor="top", y=0.9, xanchor="left", x=0.4))
 
             st.plotly_chart(figPlotlyLinechart_weektemp_data, use_container_width=True)
 
