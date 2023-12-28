@@ -1,1 +1,23 @@
-
+[theme]	
+	base="dark"
+	
+	# Used to style primary interface elements. It's the color displayed most frequently across your app's
+	# screens and components. Examples of widgets using this color are st.slider and st.checkbox.
+	#primaryColor="#2214c7"
+	
+	backgroundColor="#0A071E"
+	#backgroundColor = "rgba(254,248,239,1)" # sepia yellow
+	
+	# Used as the background for most widgets. Examples of widgets with this background are st.sidebar,
+	# st.text_input, st.date_input.
+	secondaryBackgroundColor="#2C3A48"
+	#secondaryBackgroundColor="#d3d3d3"
+	
+	#textColor="#d3d3d3"
+	#font="sans serif"
+	
+[server]
+maxUploadSize = 400
+#headless = true
+#allow csv-file upload over 400 mb 2023.01.11
+#update 2023.09.19 wegen connecting-fehlermeldung
