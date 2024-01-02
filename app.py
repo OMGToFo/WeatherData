@@ -200,11 +200,11 @@ with st.sidebar.form("Settings"): ##############################################
     with historySettingsExpander:
         #st.write("History settings")
 
-        startInput = st.date_input("Start Date", date(2018, 1, 1), key="start")
+        startInput = st.date_input("Start Date", date(2004, 1, 1), key="start")
         # startInput = st.date_input("Start Date",last_year, key="start")
 
-        # endInput = st.date_input("End Date", date(2023, 7, 22))
-        endInput = st.date_input("End Date", today, key="end")
+        endInput = st.date_input("End Date", date(2023, 12, 31), key="end")
+        #endInput = st.date_input("End Date", today, key="end")
 
         heightInput = st.number_input('Elevation (default - elevation of weather station)',
                                   value=nearestWeatherstation_elevation)
@@ -307,9 +307,9 @@ if st.session_state.ortsEingabeSpeicher != "":
         "latitude": location.latitude,
         "longitude": location.longitude,
         "current": ["temperature_2m", "precipitation", "rain", "showers", "snowfall", "wind_speed_10m",
-                    "wind_direction_10m"],
+                    "wind_direction_10m","cloud_cover"],
         "hourly": ["temperature_2m", "precipitation_probability", "precipitation", "rain", "snowfall",
-                   "cloud_cover_high", "wind_speed_10m"],
+                   "cloud_cover_high", "wind_speed_10m", "snow_depth","pressure_msl", "cloud_cover", "visibility","wind_direction_10m", "uv_index", "sunshine_duration"],
         "daily": ["temperature_2m_max", "temperature_2m_min", "sunrise", "sunset", "daylight_duration",
                   "sunshine_duration", "precipitation_sum", "rain_sum", "showers_sum", "snowfall_sum",
                   "precipitation_hours", "wind_speed_10m_max", "wind_gusts_10m_max", "wind_direction_10m_dominant"],
@@ -333,17 +333,8 @@ if st.session_state.ortsEingabeSpeicher != "":
     current_snowfall = current.Variables(4).Value()
     current_wind_speed_10m = current.Variables(5).Value()
     current_wind_direction_10m = current.Variables(6).Value()
+    current_cloud_cover = current.Variables(7).Value()
 
-    _="""
-    st.write(f"Current time {current.Time()}")
-    st.write(f"Current temperature_2m {current_temperature_2m}")
-    st.write(f"Current precipitation {current_precipitation}")
-    st.write(f"Current rain {current_rain}")
-    st.write(f"Current showers {current_showers}")
-    st.write(f"Current snowfall {current_snowfall}")
-    st.write(f"Current wind_speed_10m {current_wind_speed_10m}")
-    st.write(f"Current wind_direction_10m {current_wind_direction_10m}")
-    """
 
     current_wind_speed_text = str(round(current_wind_speed_10m,1)) + " m/s"
 
@@ -351,15 +342,19 @@ if st.session_state.ortsEingabeSpeicher != "":
 
     current_rain_text =  str(round(current_rain,1)) + " mm"
 
+    current_cloud_cover_text =  str(round(current_cloud_cover,0)) + "%"
+
+
     if option == "Today": #########################################################################
 
         st.subheader("")
-        st.subheader("Today's weather forecast data for " + Ortseingabe)
+        st.subheader(str(today))
+        st.subheader("Weather data for " + Ortseingabe)
 
         #st.sidebar.divider()
         #st.sidebar.write(f"Current rain {current_rain}")
 
-        todayMetricCol1,todayMetricCol2,todayMetricCol3,todayMetricCol4 = st.columns(4)
+        todayMetricCol1,todayMetricCol2,todayMetricCol3,todayMetricCol4,todayMetricCol5 = st.columns(5)
         with todayMetricCol1:
             st.metric(label="Current temperature in  \n" + Ortseingabe, value=current_temperature_text)
         with todayMetricCol2:
@@ -368,6 +363,10 @@ if st.session_state.ortsEingabeSpeicher != "":
             st.metric(label="Current wind speed", value=current_wind_speed_text)
         with todayMetricCol4:
             st.metric(label="Current wind direction", value=round(current_wind_direction_10m,0))
+        with todayMetricCol5:
+            st.metric(label="Cloud Cover", value=current_cloud_cover_text)
+
+
         st.subheader("")
         #st.sidebar.map(data=None, latitude=nearestWeatherstation_latitude, longitude=nearestWeatherstation_longitude, color="red", size=10, zoom=16, use_container_width=True)
         # Display a map centered at the given latitude and longitude
@@ -690,24 +689,39 @@ if st.session_state.ortsEingabeSpeicher != "":
         st.subheader("")
         st.title("Historical data for " + Ortseingabe)
 
-        st.info("Nearest weatherstation: " + nearestWeatherstation)
+        st.subheader("Nearest weatherstation: " + nearestWeatherstation)
         st.subheader("")
 
-        data_YearAvg = data.groupby('Year').agg({'tavg': 'mean'})['tavg']
+        data_YearAvg = pd.DataFrame(data.groupby('Year').agg({'tavg': 'mean'})['tavg'])
 
-        data_YearMax = data.groupby('Year').agg({'tmax': 'max'})['tmax']
+        data_YearMax = pd.DataFrame(data.groupby('Year').agg({'tmax': 'max'})['tmax'])
 
-        data_YearMin = data.groupby('Year').agg({'tmin': 'min'})['tmin']
+        data_YearMin = pd.DataFrame(data.groupby('Year').agg({'tmin': 'min'})['tmin'])
 
-        data_YearWspd = data.groupby('Year').agg({'wspd': 'mean'})['wspd']
+        data_YearWspd = pd.DataFrame(data.groupby('Year').agg({'wspd': 'mean'})['wspd'])
 
-        data_YearWprcp = data.groupby('Year').agg({'prcp': 'mean'})['prcp']
+        data_YearWprcp = pd.DataFrame(data.groupby('Year').agg({'prcp': 'mean'})['prcp'])
 
-        data_Yearsnow = data.groupby('Year').agg({'snow': 'mean'})['snow']
+        data_Yearsnow = pd.DataFrame(data.groupby('Year').agg({'snow': 'mean'})['snow'])
+
+
+        #Gesamttabelle erstellen
+        data_Year_df = pd.DataFrame()
+        data_Year_df['Average Temperatures'] = data_YearAvg['tavg']
+        data_Year_df['Max Temperatures'] = data_YearMax['tmax']
+        data_Year_df['Min Temperatures'] = data_YearMin['tmin']
+        data_Year_df['Average Windspeeds'] = data_YearWspd['wspd']
+        data_Year_df['Average Preciptation'] = data_YearWprcp['prcp']
+        data_Year_df['Snowfall'] = data_Yearsnow['snow']
+
+
+
 
         st.info("Yearly Averages from Meteostat.net")
 
         if len(data_YearAvg) > 1:
+
+            _="""
             col1, col2, col3, col4, col5, col6 = st.columns(6)
             with col1:
                 st.write("Average Temperatures")
@@ -731,6 +745,56 @@ if st.session_state.ortsEingabeSpeicher != "":
             with col6:
                 st.write("Snowfall")
                 st.write(data_Yearsnow)
+
+            """
+
+
+            dataYear_ChartVariablenAuswahl = st.multiselect(
+                "Choose Variables for the chart",
+                options=data_Year_df.columns, default="Average Temperatures")
+
+            lineShapeAuswahl = 'spline'
+
+            if st.checkbox("Edgy line shape", key="monthlySpendingsAll"):
+                lineShapeAuswahl = 'linear'
+
+            figPlotlyLinechart_data_Year = px.line(data_Year_df, x=data_Year_df.index,
+                                                       y=dataYear_ChartVariablenAuswahl,
+                                                        line_shape=lineShapeAuswahl,
+                                                       # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
+                                                      markers=True,
+                                                       # Animation:
+                                                       # range_x=[0, gesamtBudget*1000],
+                                                       #range_y=[0, 100],
+                                                       #animation_frame=data_Year_df.index,
+                                                       )
+
+            # Change grid color and axis colors
+            figPlotlyLinechart_data_Year.update_xaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                          gridcolor='Black')
+            figPlotlyLinechart_data_Year.update_yaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                          gridcolor='Black')
+
+            st.plotly_chart(figPlotlyLinechart_data_Year, use_container_width=True)
+
+
+
+            #ThomasTestetScatter
+            st.write("Trend for " + dataYear_ChartVariablenAuswahl[0] )
+            figPlotlyScatterchart_data_Year = px.scatter(data_Year_df,
+                                                         x=data_Year_df.index,
+                                                         y=dataYear_ChartVariablenAuswahl[0],
+                                                         trendline = "ols"
+                                                         )
+
+            st.plotly_chart(figPlotlyScatterchart_data_Year, use_container_width=True)
+
+
+            #simple variante -
+            st.bar_chart(data_Year_df, y=dataYear_ChartVariablenAuswahl, use_container_width=True)
+
+
+            st.write(data_Year_df)
 
         # data_YearAvg['Max'] = data_YearMax['tmax']
 
@@ -863,13 +927,7 @@ if st.session_state.ortsEingabeSpeicher != "":
 
                     forecastYhatMax = Prohetforecast_df['yhat'].max() * 1.2
 
-                    st.subheader("Forecast of " + forecastVariable)
 
-                    fig1 = m.plot(Prohetforecast_df)
-                    st.write(fig1)
-
-                    fig2 = m.plot_components(Prohetforecast_df)
-                    st.write(fig2)
 
                     data_Prohetforecast_df = data.merge(
                         Prohetforecast_df,
@@ -947,6 +1005,20 @@ if st.session_state.ortsEingabeSpeicher != "":
 
                         st.write("Difference of Yearly averages  - Prediction yhat vs measurements of " + forecastVariable,
                                  average_Values_per_yearTabelle)
+
+
+
+                    st.subheader("Forecast of " + forecastVariable)
+
+                    tab1, tab2 = st.tabs(["General", "Detailled"])
+
+                    with tab1:
+                        fig1 = m.plot(Prohetforecast_df)
+                        st.write(fig1)
+
+                    with tab2:
+                        fig2 = m.plot_components(Prohetforecast_df)
+                        st.write(fig2)
 
 
 
