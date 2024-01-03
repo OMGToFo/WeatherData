@@ -19,6 +19,22 @@ import plotly.graph_objects as go
 
 from streamlit_option_menu import option_menu
 
+
+#sunrise/sunset
+#import datetime
+from suntime import Sun, SunTimeException
+
+from timezonefinder import TimezoneFinder
+
+import pytz
+
+
+
+
+
+
+
+
 st.set_page_config(page_title="Simple weather data", page_icon="🌤️", layout="wide", initial_sidebar_state="auto")
 
 
@@ -187,13 +203,17 @@ with st.sidebar.form("Settings"): ##############################################
     mapdata = {
         'LATITUDEPOINTS': [nearestWeatherstation_latitude, location.latitude],
         'LONGITUDEPOINTS': [nearestWeatherstation_longitude, location.longitude],
-        'name': ['Nearest Weatherstation', 'Location']
+        'name': ['Nearest Weatherstation', 'Location'],
+        'farben': ['#0044ff', '#ff4400']
+
     }
 
     df_mapOrte = pd.DataFrame(mapdata)
 
+    st.write(df_mapOrte)
+
     # Display a map with multiple points
-    st.sidebar.map(df_mapOrte, latitude='LATITUDEPOINTS', longitude='LONGITUDEPOINTS',size=40)
+    st.sidebar.map(df_mapOrte, latitude='LATITUDEPOINTS', longitude='LONGITUDEPOINTS', color='farben',size=60)
 
 
     historySettingsExpander = st.expander("History settings")
@@ -348,8 +368,64 @@ if st.session_state.ortsEingabeSpeicher != "":
     if option == "Today": #########################################################################
 
         st.subheader("")
-        st.subheader(str(today))
-        st.subheader("Weather data for " + Ortseingabe)
+
+        todayheadercol1, todayheadercol2, todayheadercol3, todayheadercol4, todayheadercol5 = st.columns(5,gap="small")
+
+        with todayheadercol1:
+            st.subheader("Weather data for " + Ortseingabe)
+
+        with todayheadercol2:
+            st.subheader(str(today))
+
+        sun = Sun(location.latitude, location.longitude)
+
+        # Get today's sunrise and sunset in UTC
+        today_sr_utc = sun.get_sunrise_time()
+        today_ss_utc = sun.get_sunset_time()
+
+        # Find timezone based on longitude and latitude
+        tf = TimezoneFinder(in_memory=True)
+        local_time_zone = tf.timezone_at(lng=location.longitude, lat=location.latitude)
+        st.write(local_time_zone)
+
+        # Convert UTC time to local time using pytz
+        local_timezone = pytz.timezone(local_time_zone)  # Replace 'Your_Local_Timezone' with the desired timezone
+        today_sr_local = today_sr_utc.replace(tzinfo=pytz.utc).astimezone(local_timezone)
+        today_ss_local = today_ss_utc.replace(tzinfo=pytz.utc).astimezone(local_timezone)
+
+        #today_sr_formatiert = format(today_sr.strftime('%H:%M'))
+        #today_ss_formatiert = format(today_ss.strftime('%H:%M'))
+
+        from time import localtime
+
+        #local_sr_time= localtime(today_sr)
+        #st.write(local_sr_time)
+
+
+
+
+
+
+        #st.write(today_sr)
+        #st.write(today_ss)
+
+        with todayheadercol3:
+            #st.write(format(today_sr.strftime('%H:%M')))
+            today_sr_local_format = format(today_sr_local.strftime('%H:%M'))
+            st.subheader("Sunrise: " + str(today_sr_local_format))
+            #st.subheader("Sunrise: " + str(today_sr_local))
+            #st.subheader(":sunrise:")
+
+        with todayheadercol4:
+            #st.write(format(today_ss.strftime('%H:%M')))
+
+            today_ss_local_format = format(today_ss_local.strftime('%H:%M'))
+
+            st.subheader("Sunset: " + str(today_ss_local_format))
+
+        with todayheadercol5:
+            st.write("")
+
 
         #st.sidebar.divider()
         #st.sidebar.write(f"Current rain {current_rain}")
@@ -779,15 +855,43 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
 
-            #ThomasTestetScatter
-            st.write("Trend for " + dataYear_ChartVariablenAuswahl[0] )
+            #ThomasTestetScatter Trend Chart
+            st.subheader("Trend for " + dataYear_ChartVariablenAuswahl[0] )
+
+            trendlineChoice = st.selectbox("Choose Trendline",
+                                           ["ols","lowess","expanding"])
+
+
+            if trendlineChoice == "ols":
+                st.markdown("Ordinary Least Squares (OLS)")
+            if trendlineChoice == "lowess":
+                st.markdown("Locally WEighted Scatterplot Smoothing (LOWESS)")
+            if trendlineChoice == "expanding":
+                st.markdown("Expanding mean")
+
+            YRangeCol1, YRangeCol2, YRangeCol3 = st.columns([0.1, 0.1, 0.8])
+
+            yMinRange = data_Year_df[dataYear_ChartVariablenAuswahl[0]].min()*0.5
+            yMaxRange = data_Year_df[dataYear_ChartVariablenAuswahl[0]].max() * 1.5
+
+            with YRangeCol1:
+                yMinInput = st.number_input("YMin", placeholder="Ymin", value=yMinRange)
+            with YRangeCol2:
+                yMaxInput = st.number_input("YMax", placeholder="Ymax", value=yMaxRange)
+
+            with YRangeCol3:
+                st.write("")
+
             figPlotlyScatterchart_data_Year = px.scatter(data_Year_df,
                                                          x=data_Year_df.index,
                                                          y=dataYear_ChartVariablenAuswahl[0],
-                                                         trendline = "ols"
+                                                         trendline = trendlineChoice,
+                                                         range_y=[yMinInput, yMaxInput],
                                                          )
 
+
             st.plotly_chart(figPlotlyScatterchart_data_Year, use_container_width=True)
+
 
 
             #simple variante -
