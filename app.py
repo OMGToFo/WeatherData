@@ -506,7 +506,7 @@ if st.session_state.ortsEingabeSpeicher != "":
                 columns=['date','wind_speed_10m'])
             todaywind_data = todaywind_data.head(24)
             todaywindMean = todaywind_data.wind_speed_10m.mean().round(1)
-            st.info("Today's wind (mean: " + str(todaywindMean) + "m/s)")
+            st.info("Today's wind (mean: " + str(todaywindMean) + " m/s)")
             st.line_chart(todaywind_data.wind_speed_10m,use_container_width=True)
 
 
@@ -516,9 +516,9 @@ if st.session_state.ortsEingabeSpeicher != "":
                 hourly_dataframe,
                 columns=['date','rain'])
             todayrain_data = todayrain_data.head(24)
-            todayRainVorkommen = todayrain_data.rain.sum()
+            todayRainVorkommen = todayrain_data.rain.sum().round(1)
             if todayRainVorkommen:
-                st.info("Today's rain (sum: " + str(todayRainVorkommen) + "mm)")
+                st.info("Today's rain (sum: " + str(todayRainVorkommen) + " mm)")
                 st.bar_chart(todayrain_data.rain,use_container_width=True)
             else:
                 st.success("No rain today")
@@ -529,7 +529,7 @@ if st.session_state.ortsEingabeSpeicher != "":
                 hourly_dataframe,
                 columns=['date','snowfall'])
             todaysnow_data = todaysnow_data.head(24)
-            todaysnowVorkommen = todaysnow_data.snowfall.sum()
+            todaysnowVorkommen = todaysnow_data.snowfall.sum().round(1)
             if todaysnowVorkommen > 0:
                 st.snow()
                 st.info("Today's snowfall")
