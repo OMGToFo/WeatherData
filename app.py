@@ -198,6 +198,7 @@ with st.sidebar.form("Settings"): ##############################################
         st.write("The latitude of the location is: ", location.latitude)
         st.write("The longitude of the location is: ", location.longitude)
         st.write("Nearest Weather Station (Meteostat): ", weatherstation_data)
+        st.markdown(':blue[Blue Point: Weather station]')
 
 
     mapdata = {
@@ -456,6 +457,11 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
 
+        #"hourly": ["temperature_2m", "precipitation_probability", "precipitation", "rain", "snowfall",
+          #         "cloud_cover_high", "wind_speed_10m", "snow_depth","pressure_msl", "cloud_cover", "visibility","wind_direction_10m", "uv_index", "sunshine_duration"],
+
+
+
         # Process hourly data. The order of variables needs to be the same as requested.
         hourly = response.Hourly()
         hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
@@ -465,6 +471,14 @@ if st.session_state.ortsEingabeSpeicher != "":
         hourly_snowfall = hourly.Variables(4).ValuesAsNumpy()
         hourly_cloud_cover_high = hourly.Variables(5).ValuesAsNumpy()
         hourly_wind_speed_10m = hourly.Variables(6).ValuesAsNumpy()
+        hourly_snow_depth = hourly.Variables(7).ValuesAsNumpy()
+        hourly_pressure_msl = hourly.Variables(8).ValuesAsNumpy()
+        hourly_cloud_cover = hourly.Variables(9).ValuesAsNumpy()
+        hourly_visibility = hourly.Variables(10).ValuesAsNumpy()
+        hourly_wind_direction_10m = hourly.Variables(11).ValuesAsNumpy()
+        hourly_uv_index = hourly.Variables(12).ValuesAsNumpy()
+        hourly_sunshine_duration = hourly.Variables(13).ValuesAsNumpy()
+
 
         hourly_data = {"date": pd.date_range(
             start=pd.to_datetime(hourly.Time(), unit="s"),
@@ -477,8 +491,12 @@ if st.session_state.ortsEingabeSpeicher != "":
         hourly_data["precipitation"] = hourly_precipitation
         hourly_data["rain"] = hourly_rain
         hourly_data["snowfall"] = hourly_snowfall
-        hourly_data["cloud_cover_high"] = hourly_cloud_cover_high
+        hourly_data["cloud_cover"] = hourly_cloud_cover
         hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
+        hourly_data["visibility"] = hourly_visibility
+        hourly_data["wind_direction_10m"] = hourly_wind_direction_10m
+        hourly_data["uv_index"] = hourly_uv_index
+        hourly_data["sunshine_duration"] = (hourly_sunshine_duration/60).round(0)
 
 
         hourly_dataframe = pd.DataFrame(data=hourly_data)
@@ -526,6 +544,26 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
         with hourlyCols4:
+            cloud_cover_data = pd.DataFrame(
+                hourly_dataframe,
+                columns=['date','cloud_cover'])
+            cloud_cover_data = cloud_cover_data.head(24)
+            st.info("Today's cloud cover")
+            st.line_chart(cloud_cover_data.cloud_cover,use_container_width=True)
+
+
+        hourlyCols5, hourlyCols6 = st.columns(2)
+
+        with hourlyCols5:
+            visibility_data = pd.DataFrame(
+                hourly_dataframe,
+                columns=['date','visibility'])
+            visibility_data = visibility_data.head(24)
+            st.info("Today's Visibility")
+            st.line_chart(visibility_data.visibility,use_container_width=True)
+
+
+        with hourlyCols6:
             todaysnow_data = pd.DataFrame(
                 hourly_dataframe,
                 columns=['date','snowfall'])
@@ -539,11 +577,39 @@ if st.session_state.ortsEingabeSpeicher != "":
                 st.write("")
 
 
+        hourlyCols7, hourlyCols8 = st.columns(2)
+
+        with hourlyCols7:
+            wind_direction_10m_data = pd.DataFrame(
+                hourly_dataframe,
+                columns=['date','wind_direction_10m'])
+            wind_direction_10m_data = wind_direction_10m_data.head(24)
+            st.info("Today's Wind Directions")
+            st.line_chart(wind_direction_10m_data.wind_direction_10m,use_container_width=True)
+
+        with hourlyCols8:
+            uv_index_data = pd.DataFrame(
+                hourly_dataframe,
+                columns=['date','uv_index'])
+            uv_index_data = uv_index_data.head(24)
+            st.info("Today's UV-Index")
+            st.line_chart(uv_index_data.uv_index,use_container_width=True)
+
+
+        hourlyCols9, hourlyCols10 = st.columns(2)
+
+        with hourlyCols9:
+            sunshine_duration_data = pd.DataFrame(
+                hourly_dataframe,
+                columns=['date','sunshine_duration'])
+            sunshine_duration_data = sunshine_duration_data.head(24)
+            st.info("Sunshine Duration per hour (min)")
+            st.bar_chart(sunshine_duration_data.sunshine_duration,use_container_width=True)
 
 
 
 
-    if option == "Week": #################################################################
+    if option == "Week": ####################################################################################
 
         # Process daily data. The order of variables needs to be the same as requested.
         daily = response.Daily()
