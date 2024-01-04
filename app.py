@@ -1025,7 +1025,7 @@ if st.session_state.ortsEingabeSpeicher != "":
 
                     forecastDateExpander = st.expander("Tables with Forecast Data >>")
                     with forecastDateExpander:
-                        st.write('Forecast Data:')
+                        st.write('Forecast Data - Prohetforecast_df:')
                         # Display the forecast output
                         st.write(Prohetforecast_df)
                         st.write(Prohetforecast_df.describe())
@@ -1040,6 +1040,8 @@ if st.session_state.ortsEingabeSpeicher != "":
                         right_on='ds',
                         how='right'  # You can choose 'inner', 'outer', 'left', or 'right' depending on your requirements
                     )
+
+                    data_Prohetforecast_df['Year_All'] = data_Prohetforecast_df['ds'].dt.year
 
                     data_Prohetforecast_dfExpander = st.expander("Show Measured and forecasted data >>")
                     with data_Prohetforecast_dfExpander:
@@ -1074,10 +1076,10 @@ if st.session_state.ortsEingabeSpeicher != "":
 
                     # Group by the year and calculate the average prognostizierte values
 
-                    st.write("forecastVariable: ",forecastVariable)
+                    #st.write("forecastVariable: ",forecastVariable)
 
                     #average_Values_per_year = data_Prohetforecast_df.groupby('Year')['yhat', forecastVariable].mean()
-                    average_Values_per_year = data_Prohetforecast_df.groupby('Year')[['yhat', forecastVariable]].mean()
+                    average_Values_per_year = data_Prohetforecast_df.groupby('Year_All')[['yhat', forecastVariable]].mean()
 
                     if len(average_Values_per_year) > 1:
                         # st.write(average_Values_per_year)
