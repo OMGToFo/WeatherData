@@ -210,7 +210,7 @@ with st.sidebar.form("Settings"): ##############################################
 
     df_mapOrte = pd.DataFrame(mapdata)
 
-    st.write(df_mapOrte)
+    #st.write(df_mapOrte)
 
     # Display a map with multiple points
     st.sidebar.map(df_mapOrte, latitude='LATITUDEPOINTS', longitude='LONGITUDEPOINTS', color='farben',size=60)
@@ -380,8 +380,16 @@ if st.session_state.ortsEingabeSpeicher != "":
         sun = Sun(location.latitude, location.longitude)
 
         # Get today's sunrise and sunset in UTC
-        today_sr_utc = sun.get_sunrise_time()
-        today_ss_utc = sun.get_sunset_time()
+        try:
+            today_sr_utc = sun.get_sunrise_time()
+            #st.write(today_sr_utc)
+        except:
+            today_sr_utc = 1999-1-1
+
+        try:
+            today_ss_utc = sun.get_sunset_time()
+        except:
+            today_ss_utc = 1999-1-1
 
         # Find timezone based on longitude and latitude
         tf = TimezoneFinder(in_memory=True)
@@ -390,38 +398,31 @@ if st.session_state.ortsEingabeSpeicher != "":
 
         # Convert UTC time to local time using pytz
         local_timezone = pytz.timezone(local_time_zone)  # Replace 'Your_Local_Timezone' with the desired timezone
-        today_sr_local = today_sr_utc.replace(tzinfo=pytz.utc).astimezone(local_timezone)
-        today_ss_local = today_ss_utc.replace(tzinfo=pytz.utc).astimezone(local_timezone)
+
+        if today_sr_utc != 1999-1-1:
+            today_sr_local = today_sr_utc.replace(tzinfo=pytz.utc).astimezone(local_timezone)
+
+        if today_ss_utc != 1999 - 1 - 1:
+            today_ss_local = today_ss_utc.replace(tzinfo=pytz.utc).astimezone(local_timezone)
 
         #today_sr_formatiert = format(today_sr.strftime('%H:%M'))
         #today_ss_formatiert = format(today_ss.strftime('%H:%M'))
 
         from time import localtime
 
-        #local_sr_time= localtime(today_sr)
-        #st.write(local_sr_time)
-
-
-
-
-
-
-        #st.write(today_sr)
-        #st.write(today_ss)
 
         with todayheadercol3:
             #st.write(format(today_sr.strftime('%H:%M')))
-            today_sr_local_format = format(today_sr_local.strftime('%H:%M'))
-            st.subheader("Sunrise: " + str(today_sr_local_format))
-            #st.subheader("Sunrise: " + str(today_sr_local))
-            #st.subheader(":sunrise:")
+            if today_sr_utc != 1999 - 1 - 1:
+                today_sr_local_format = format(today_sr_local.strftime('%H:%M'))
+                st.subheader("Sunrise: " + str(today_sr_local_format))
+
 
         with todayheadercol4:
             #st.write(format(today_ss.strftime('%H:%M')))
-
-            today_ss_local_format = format(today_ss_local.strftime('%H:%M'))
-
-            st.subheader("Sunset: " + str(today_ss_local_format))
+            if today_ss_utc != 1999 - 1 - 1:
+                today_ss_local_format = format(today_ss_local.strftime('%H:%M'))
+                st.subheader("Sunset: " + str(today_ss_local_format))
 
         with todayheadercol5:
             st.write("")
