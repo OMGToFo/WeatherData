@@ -220,7 +220,7 @@ with st.sidebar.form("Settings"): ##############################################
         st.stop()
 
 
-    station = stations.fetch(1)
+    station = stations.fetch(3)
     weatherstation_data = pd.DataFrame(station)
     nearestWeatherstation = weatherstation_data['name'].iloc[0]
     nearestWeatherstation_latitude = weatherstation_data['latitude'].iloc[0]
@@ -232,8 +232,8 @@ with st.sidebar.form("Settings"): ##############################################
         st.write(location.raw)
         st.write("The latitude of the location is: ", location.latitude)
         st.write("The longitude of the location is: ", location.longitude)
-        st.write("Nearest Weather Station (Meteostat): ", weatherstation_data)
-        st.markdown(':blue[Blue Point: Weather station]')
+        st.write("Nearest Weather Stations (Meteostat): ", weatherstation_data)
+        st.markdown(':blue[Blue Point: Nearest Weather station]')
 
 
     mapdata = {
