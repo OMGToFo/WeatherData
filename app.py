@@ -198,34 +198,39 @@ geolocator = Nominatim(user_agent="MyApp")
 latitude = 0.0000
 longitude = 0.0000
 
+location = geolocator.geocode(Ortseingabe)
+
+stations = Stations()
+
+time.sleep(1)
+
+try:
+    stations = stations.nearby(location.latitude, location.longitude)
+
+except:
+    st.warning("Found no matching weatherstations, try another location")
+    st.stop()
+
+station = stations.fetch(3)
+weatherstation_data = pd.DataFrame(station)
+nearestWeatherstation = weatherstation_data['name'].iloc[0]
+nearestWeatherstation_latitude = weatherstation_data['latitude'].iloc[0]
+nearestWeatherstation_longitude = weatherstation_data['longitude'].iloc[0]
+nearestWeatherstation_elevation = weatherstation_data['elevation'].iloc[0]
+
+
+
+
+
+
+
 with st.sidebar.form("Settings"): ##############################################
 
     st.write("")
 
     st.write("")
 
-    location = geolocator.geocode(Ortseingabe)
 
-
-
-    stations = Stations()
-
-    time.sleep(1)
-
-    try:
-        stations = stations.nearby(location.latitude, location.longitude)
-
-    except:
-        st.warning("Found no matching weatherstations, try another location")
-        st.stop()
-
-
-    station = stations.fetch(3)
-    weatherstation_data = pd.DataFrame(station)
-    nearestWeatherstation = weatherstation_data['name'].iloc[0]
-    nearestWeatherstation_latitude = weatherstation_data['latitude'].iloc[0]
-    nearestWeatherstation_longitude = weatherstation_data['longitude'].iloc[0]
-    nearestWeatherstation_elevation = weatherstation_data['elevation'].iloc[0]
 
     locationInfoExpander = st.sidebar.expander("Location info")
     with locationInfoExpander:
@@ -608,10 +613,10 @@ if st.session_state.ortsEingabeSpeicher != "":
             todaysnowVorkommen = todaysnow_data.snowfall.sum().round(1)
             if todaysnowVorkommen > 0:
                 st.snow()
-                st.info("Today's snowfall")
+                st.info("Today's snowfall (sum: "+ str(todaysnowVorkommen) +" )" )
                 st.bar_chart(todaysnow_data.snowfall,use_container_width=True)
             else:
-                st.write("")
+                st.warning("No snowfall today")
 
 
         hourlyCols7, hourlyCols8 = st.columns(2)
@@ -640,8 +645,12 @@ if st.session_state.ortsEingabeSpeicher != "":
                 hourly_dataframe,
                 columns=['date','sunshine_duration'])
             sunshine_duration_data = sunshine_duration_data.head(24)
-            st.info("Sunshine Duration per hour (min)")
-            st.bar_chart(sunshine_duration_data.sunshine_duration,use_container_width=True)
+            todaySunVorkommen = sunshine_duration_data.sunshine_duration.sum().round(1)
+            if todaySunVorkommen > 0:
+                st.info("Sunshine Duration per hour (min), (sum: " + str(todaySunVorkommen) + "min)")
+                st.bar_chart(sunshine_duration_data.sunshine_duration,use_container_width=True)
+            else:
+                st.warning("No sunshine today")
 
 
 
