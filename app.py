@@ -85,6 +85,12 @@ if 'longSpeicher' not in st.session_state:
 #######################################################################################################
 
 #Autolocation
+
+AutoAdmin1 = ""
+lat = 0.0
+long = 0.0
+
+
 loc = get_geolocation()
 if loc:
     #st.write(f"Your coordinates are {loc}")
@@ -188,6 +194,10 @@ from meteostat import Stations
 geolocator = Nominatim(user_agent="MyApp")
 
 
+#Variablendef
+latitude = 0.0000
+longitude = 0.0000
+
 with st.sidebar.form("Settings"): ##############################################
 
     st.write("")
@@ -199,7 +209,17 @@ with st.sidebar.form("Settings"): ##############################################
 
 
     stations = Stations()
-    stations = stations.nearby(location.latitude, location.longitude)
+
+    time.sleep(1)
+
+    try:
+        stations = stations.nearby(location.latitude, location.longitude)
+
+    except:
+        st.warning("Found no matching weatherstations, try another location")
+        st.stop()
+
+
     station = stations.fetch(1)
     weatherstation_data = pd.DataFrame(station)
     nearestWeatherstation = weatherstation_data['name'].iloc[0]
@@ -525,11 +545,13 @@ if st.session_state.ortsEingabeSpeicher != "":
         hourlyCols1, hourlyCols2 = st.columns(2)
 
         with hourlyCols1:
-            st.info("Today's Temperatures")
+
             todaytemp_data = pd.DataFrame(
                 hourly_dataframe,
                 columns=['date','temperature_2m'])
             todaytemp_data = todaytemp_data.head(24)
+            todaytemp_dataMean = todaytemp_data.temperature_2m.mean().round(1)
+            st.info("Today's Temperatures (mean: " + str(todaytemp_dataMean) + " °C)")
             st.line_chart(todaytemp_data.temperature_2m,use_container_width=True)
 
 
@@ -812,7 +834,7 @@ if st.session_state.ortsEingabeSpeicher != "":
                 columns=['weekday','snowfall_sum'])
             thisWeeksnowVorkommen = weeksnowfall_data.snowfall_sum.sum()
             if thisWeeksnowVorkommen > 0:
-                st.snow()
+                #st.snow()
                 st.info("This week's snow falls")
                 figPlotlyLinechart_weekSnow_data = px.bar(weeksnowfall_data, x='weekday',
                                                            y='snowfall_sum', #line_shape='linear',
