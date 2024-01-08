@@ -29,8 +29,20 @@ from timezonefinder import TimezoneFinder
 import pytz
 
 
+#for geolocationing
+from streamlit_js_eval import streamlit_js_eval, get_geolocation
+import json
+
+# Import the required library
+from geopy.geocoders import Nominatim
 
 
+# Initialize Nominatim API
+geolocator = Nominatim(user_agent="MyApp")
+
+import reverse_geocoder as rg
+
+import time
 
 
 
@@ -55,15 +67,76 @@ if 'forecastVariableSpeicher' not in st.session_state:
 if 'ortsEingabeSpeicher' not in st.session_state:
     st.session_state.ortsEingabeSpeicher = "Zurich"
 
-#####################################################
 
 
-#st.title("Simple Weather Data")
-#st.info("Sources - historical data: https://meteostat.net, current data: https://open-meteo.com ")
+if 'latSpeicher' not in st.session_state:
+    st.session_state.latSpeicher = 45.0
+
+if 'longSpeicher' not in st.session_state:
+    st.session_state.longSpeicher = 1.0
+
+
+
+###### IDEE - Standort lat long automatisch ermitteln und dann nächsten Ort (admin1) herausfinden #########
+
+
+
+
+#######################################################################################################
+
+#Autolocation
+loc = get_geolocation()
+if loc:
+    #st.write(f"Your coordinates are {loc}")
+    lat = loc['coords']['latitude']
+    long = loc['coords']['longitude']
+
+    _="""
+    from geopy.geocoders import Nominatim  ########################
+
+    time.sleep(1)
+
+    geolocator = Nominatim(user_agent="nearest-town-finder")
+    location = geolocator.reverse((lat, long), exactly_one=True)
+    if location:
+        location_adress = location.address.split(",")
+        location_adressExpander = st.expander("location_adress by Nominatim geolocator")
+        with location_adressExpander:
+            st.write("location_adress by Nominatim geolocator: ", location_adress)
+
+        nearest_town = location.address.split(",")[3].strip()
+        st.write("nearest_town:", nearest_town)
+
+    """
+
+
+    #reverse_geocoder as rg
+    coordinates = (lat, long)
+    searchLokalInfo = rg.search(coordinates,mode=1)
+    if searchLokalInfo:
+        searchLokalInfo_name = [x.get('name') for x in searchLokalInfo]
+        #st.write("searchLokalInfo_name: ", searchLokalInfo_name)
+        AutoTown = searchLokalInfo_name[0]
+        #st.write("AutoTown: ", AutoTown)
+
+        searchLokalInfo_admin1 = [y.get('admin1') for y in searchLokalInfo]
+        AutoAdmin1 = searchLokalInfo_admin1[0]
+        #st.write("AutoAdmin1: ", AutoAdmin1)
+
+
+
+
+#############################################################################################################
+
+if AutoAdmin1 != None:
+    OrtseingabeStartwert = AutoAdmin1
+else:
+    OrtseingabeStartwert = "Stockholm"
 
 col1, col2 = st.columns([3, 10])
 with col1:
-    Ortseingabe = st.text_input("", value=st.session_state.ortsEingabeSpeicher)
+    #Ortseingabe = st.text_input("", value=st.session_state.ortsEingabeSpeicher)
+    Ortseingabe = st.text_input("", value=OrtseingabeStartwert)
     st.session_state.ortsEingabeSpeicher = Ortseingabe
 with col2:
     st.title("Simple Weather Data")
@@ -88,31 +161,7 @@ import requests_cache
 
 from retry_requests import retry
 
-if 1 ==0:
-# Code um den Button-Design anzupassen
-    m = st.markdown("""
-    <style>
-    div.stButton > button:first-child {
-        background-color: #ce1126;
-        color: white;
-        height: 3em;
-        width: 10em;
-        border-radius:10px;
-        border:3px solid #000000;
-        font-size:20px;
-        font-weight: bold;
-        margin: auto;
-        display: block;
-    }
-    div.stButton > button:hover {
-        background:linear-gradient(to bottom, #ce1126 5%, #ff5a5a 100%);
-        background-color:#ce1126;
-    }
-    div.stButton > button:active {
-        position:relative;
-        top:3px;
-    }
-    </style>""", unsafe_allow_html=True)
+
 
 
 
@@ -121,41 +170,7 @@ if 1 ==0:
 
 ########################################
 
-_ = """
-# find nearest weatherstation - based on ip location and set this as default
-import geocoder
-import reverse_geocoder as rg
 
-g = geocoder.ip('me')
-lat = (g.lat)
-long = (g.lng)
-
-from meteostat import Stations
-
-stationNearby = Stations()
-stationNearby = stationNearby.nearby(lat, long)
-stationNearby = stationNearby.fetch(1)
-weatherstation_data = pd.DataFrame(stationNearby)
-nearestWeatherstation = weatherstation_data['name'].iloc[0]
-# st.write("stationNearby: ",stationNearby)
-
-
-
-from geopy.geocoders import Nominatim
-geolocator = Nominatim(user_agent="nearest-town-finder")
-location = geolocator.reverse((lat, long), exactly_one=True)
-if location:
-    nearest_town = location.address.split(",")[2].strip()
-    st.write("nearest_town:", nearest_town)
-"""
-_ = """
-coordinates = (lat, long)
-searchLokalInfo = rg.search(coordinates)
-searchLokalInfo_name = [x.get('name') for x in searchLokalInfo]
-st.write("searchLokalInfo_name: ",searchLokalInfo_name)
-Town = searchLokalInfo_name[0]
-st.write("Town: ",Town)
-"""
 
 
 today = date.today()
