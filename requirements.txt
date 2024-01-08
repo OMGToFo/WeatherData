@@ -16,3 +16,4 @@ retry_requests==2.0.0
 streamlit_option_menu==0.3.2
 suntime==1.2.5
 timezonefinder==6.2.0
+pytz==2021.3
