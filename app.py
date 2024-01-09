@@ -137,12 +137,12 @@ if loc:
 if AutoAdmin1 != None:
     OrtseingabeStartwert = AutoAdmin1
 else:
-    OrtseingabeStartwert = "Stockholm"
+    OrtseingabeStartwert = "Zurich"
 
 col1, col2 = st.columns([3, 10])
 with col1:
     #Ortseingabe = st.text_input("", value=st.session_state.ortsEingabeSpeicher)
-    Ortseingabe = st.text_input("", value=OrtseingabeStartwert)
+    Ortseingabe = st.text_input("", value=OrtseingabeStartwert, help="Location")
     st.session_state.ortsEingabeSpeicher = Ortseingabe
 with col2:
     st.title("Simple Weather Data")
@@ -208,8 +208,9 @@ try:
     stations = stations.nearby(location.latitude, location.longitude)
 
 except:
-    st.warning("Found no matching weatherstations, try another location")
+    st.info("Looking for  weatherstations...if no one is found, please enter another location")
     st.stop()
+
 
 station = stations.fetch(3)
 weatherstation_data = pd.DataFrame(station)
@@ -435,7 +436,9 @@ if st.session_state.ortsEingabeSpeicher != "":
         # Find timezone based on longitude and latitude
         tf = TimezoneFinder(in_memory=True)
         local_time_zone = tf.timezone_at(lng=location.longitude, lat=location.latitude)
-        st.write(local_time_zone)
+        #st.write(local_time_zone)
+
+        st.write("Weather station: " + nearestWeatherstation)
 
         # Convert UTC time to local time using pytz
         local_timezone = pytz.timezone(local_time_zone)  # Replace 'Your_Local_Timezone' with the desired timezone
