@@ -93,6 +93,7 @@ if 'longSpeicher' not in st.session_state:
 #Autolocation
 
 AutoAdmin1 = ""
+AutoAdmin2 = ""
 AutoTown = ""
 nearest_town1 = ""
 nearest_town2 = ""
