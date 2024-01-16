@@ -44,7 +44,13 @@ import reverse_geocoder as rg
 
 import time
 
+import openmeteo_requests
 
+import requests_cache
+
+from retry_requests import retry
+
+from streamlit_datalist import stDatalist
 
 
 st.set_page_config(page_title="Simple weather data", page_icon="🌤️", layout="wide", initial_sidebar_state="auto")
@@ -87,6 +93,13 @@ if 'longSpeicher' not in st.session_state:
 #Autolocation
 
 AutoAdmin1 = ""
+AutoTown = ""
+nearest_town1 = ""
+nearest_town2 = ""
+nearest_town3 = ""
+
+
+
 lat = 0.0
 long = 0.0
 
@@ -97,7 +110,9 @@ if loc:
     lat = loc['coords']['latitude']
     long = loc['coords']['longitude']
 
-    _="""
+
+
+    #Zusätzliches Abchecken vom Ort
     from geopy.geocoders import Nominatim  ########################
 
     time.sleep(1)
@@ -106,14 +121,15 @@ if loc:
     location = geolocator.reverse((lat, long), exactly_one=True)
     if location:
         location_adress = location.address.split(",")
-        location_adressExpander = st.expander("location_adress by Nominatim geolocator")
-        with location_adressExpander:
-            st.write("location_adress by Nominatim geolocator: ", location_adress)
+        #location_adressExpander = st.expander("location_adress by Nominatim geolocator")
+        #with location_adressExpander:
+        #    st.write("location_adress by Nominatim geolocator: ", location_adress)
 
-        nearest_town = location.address.split(",")[3].strip()
-        st.write("nearest_town:", nearest_town)
+        nearest_town1 = location.address.split(",")[1].strip()
+        nearest_town2 = location.address.split(",")[2].strip()
+        nearest_town3 = location.address.split(",")[3].strip()
+        #st.write("nearest_town1:", nearest_town1)
 
-    """
 
 
     #reverse_geocoder as rg
@@ -129,7 +145,9 @@ if loc:
         AutoAdmin1 = searchLokalInfo_admin1[0]
         #st.write("AutoAdmin1: ", AutoAdmin1)
 
-
+        searchLokalInfo_admin2 = [z.get('admin2') for z in searchLokalInfo]
+        AutoAdmin2 = searchLokalInfo_admin2[0]
+        #st.write("AutoAdmin1: ", AutoAdmin1)
 
 
 #############################################################################################################
@@ -137,12 +155,12 @@ if loc:
 if AutoAdmin1 != None:
     OrtseingabeStartwert = AutoAdmin1
 else:
-    OrtseingabeStartwert = "Zurich"
+    OrtseingabeStartwert = AutoTown
 
 col1, col2 = st.columns([3, 10])
 with col1:
-    #Ortseingabe = st.text_input("", value=st.session_state.ortsEingabeSpeicher)
-    Ortseingabe = st.text_input("", value=OrtseingabeStartwert, help="Location")
+    Ortseingabe = stDatalist("Location", [OrtseingabeStartwert, AutoTown,AutoAdmin2,nearest_town1,nearest_town2,nearest_town3], index=0)
+    #Ortseingabe = st.text_input("", value=OrtseingabeStartwert, help="Location")
     st.session_state.ortsEingabeSpeicher = Ortseingabe
 with col2:
     st.title("Simple Weather Data")
@@ -161,11 +179,7 @@ option = option_menu(
 	orientation="horizontal",
 )
 
-import openmeteo_requests
 
-import requests_cache
-
-from retry_requests import retry
 
 
 
