@@ -53,6 +53,9 @@ from retry_requests import retry
 from streamlit_datalist import stDatalist
 
 
+
+
+
 st.set_page_config(page_title="Simple weather data", page_icon="🌤️", layout="wide", initial_sidebar_state="auto")
 
 
@@ -113,23 +116,27 @@ if loc:
 
 
 
+
     #Zusätzliches Abchecken vom Ort
     from geopy.geocoders import Nominatim  ########################
 
     time.sleep(1)
 
     geolocator = Nominatim(user_agent="nearest-town-finder")
-    location = geolocator.reverse((lat, long), exactly_one=True)
-    if location:
-        location_adress = location.address.split(",")
-        #location_adressExpander = st.expander("location_adress by Nominatim geolocator")
-        #with location_adressExpander:
-        #    st.write("location_adress by Nominatim geolocator: ", location_adress)
+    try:
+        location = geolocator.reverse((lat, long), exactly_one=True)
+        if location:
+            location_adress = location.address.split(",")
+            #location_adressExpander = st.expander("location_adress by Nominatim geolocator")
+            #with location_adressExpander:
+            #    st.write("location_adress by Nominatim geolocator: ", location_adress)
 
-        nearest_town1 = location.address.split(",")[1].strip()
-        nearest_town2 = location.address.split(",")[2].strip()
-        nearest_town3 = location.address.split(",")[3].strip()
-        #st.write("nearest_town1:", nearest_town1)
+            nearest_town1 = location.address.split(",")[1].strip()
+            nearest_town2 = location.address.split(",")[2].strip()
+            nearest_town3 = location.address.split(",")[3].strip()
+            #st.write("nearest_town1:", nearest_town1)
+    except:
+        st.stop()
 
 
 
