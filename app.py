@@ -38,7 +38,7 @@ from geopy.geocoders import Nominatim
 
 
 # Initialize Nominatim API
-geolocator = Nominatim(user_agent="MyApp")
+geolocator = Nominatim(user_agent="superSimpleWeatherApp")
 
 import reverse_geocoder as rg
 
