@@ -220,7 +220,11 @@ geolocator = Nominatim(user_agent="MyApp")
 latitude = 0.0000
 longitude = 0.0000
 
-location = geolocator.geocode(Ortseingabe)
+#location = geolocator.geocode(Ortseingabe)
+#Pass None to disable the timeout.
+#location = geolocator.geocode(county, timeout=None)
+location = geolocator.geocode(Ortseingabe, timeout=None)
+
 
 stations = Stations()
 
