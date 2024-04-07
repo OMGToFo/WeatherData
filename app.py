@@ -213,7 +213,7 @@ from meteostat import Stations
 
 
 # Initialize Nominatim API
-geolocator = Nominatim(user_agent="MyApp")
+geolocator = Nominatim(user_agent="My simple weather App")
 
 
 #Variablendef
@@ -223,7 +223,13 @@ longitude = 0.0000
 #location = geolocator.geocode(Ortseingabe)
 #Pass None to disable the timeout.
 #location = geolocator.geocode(county, timeout=None)
-location = geolocator.geocode(Ortseingabe, timeout=None)
+
+try:
+    location = geolocator.geocode(Ortseingabe)
+    time.sleep(2)
+except:
+    st.info("I have problems finding the location")
+    st.stop()
 
 
 stations = Stations()
