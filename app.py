@@ -228,7 +228,7 @@ try:
     location = geolocator.geocode(Ortseingabe)
     time.sleep(2)
 except:
-    st.info("I have problems finding the location")
+    st.info(".. searching location..")
     st.stop()
 
 
