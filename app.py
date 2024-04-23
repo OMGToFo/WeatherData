@@ -1,3 +1,5 @@
+#2024.04.23.11 jahresvergleiche hinzugefüht
+
 import streamlit as st
 import pandas as pd
 from datetime import date, datetime
@@ -297,7 +299,7 @@ with st.sidebar.form("Settings"): ##############################################
         startInput = st.date_input("Start Date", date(2004, 1, 1), key="start")
         # startInput = st.date_input("Start Date",last_year, key="start")
 
-        endInput = st.date_input("End Date", date(2023, 12, 31), key="end")
+        endInput = st.date_input("End Date", date(2024, 4, 20), key="end")
         #endInput = st.date_input("End Date", today, key="end")
 
         heightInput = st.number_input('Elevation (default - elevation of weather station)',
@@ -977,33 +979,98 @@ if st.session_state.ortsEingabeSpeicher != "":
                 "Choose Variables for the chart",
                 options=data_Year_df.columns, default="Average Temperatures")
 
-            lineShapeAuswahl = 'spline'
 
-            if st.checkbox("Edgy line shape", key="monthlySpendingsAll"):
-                lineShapeAuswahl = 'linear'
 
-            figPlotlyLinechart_data_Year = px.line(data_Year_df, x=data_Year_df.index,
-                                                       y=dataYear_ChartVariablenAuswahl,
-                                                        line_shape=lineShapeAuswahl,
-                                                       # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
-                                                      markers=True,
-                                                       # Animation:
-                                                       # range_x=[0, gesamtBudget*1000],
-                                                       #range_y=[0, 100],
-                                                       #animation_frame=data_Year_df.index,
-                                                       )
+            st.write("")
+            st.subheader("Comparison of Years")
 
-            # Change grid color and axis colors
-            figPlotlyLinechart_data_Year.update_xaxes(showline=True, linewidth=0.1, linecolor='Black',
-                                                          gridcolor='Black')
-            figPlotlyLinechart_data_Year.update_yaxes(showline=True, linewidth=0.1, linecolor='Black',
-                                                          gridcolor='Black')
+            compareYearsOptions = data.Year.unique().tolist()
+            compareYearsDefault = [2022,2023,2024]
 
-            st.plotly_chart(figPlotlyLinechart_data_Year, use_container_width=True)
+            compareYearsSelection = st.multiselect(
+                "Choose Years to compare",
+                options=compareYearsOptions, default=compareYearsDefault)
+
+            df_compareYears= data[data["Year"].isin(compareYearsSelection)]
+
+            df_compareYears['Month'] = df_compareYears['Date'].dt.month
+            df_compareYears['Month'] = df_compareYears['Date'].dt.month
+
+
+
+
+
+            df_compareYears = df_compareYears.rename(columns={'tavg': 'Average Temperatures','tmin': 'Min Temperatures' ,'tmax': 'Max Temperatures','prcp': 'Average Preciptation','wspd': 'Average Windspeeds','snow': 'Snowfall'})
+
+            #st.write(df_compareYears)
+
+            # Group by year and month, calculate the average temperature
+            monthly_avg = df_compareYears.groupby(['Year', 'Month'])[dataYear_ChartVariablenAuswahl[0]].mean().unstack()
+
+            #st.write(monthly_avg)
+
+            import matplotlib.pyplot as plt
+
+            for year, temps in monthly_avg.iterrows():
+                plt.plot(temps, label=year)
+
+            plt.xlabel('Month')
+
+            plt.ylabel(dataYear_ChartVariablenAuswahl[0])
+            plt.title(dataYear_ChartVariablenAuswahl[0] + ' per Month for Each Year')
+            plt.xticks(range(1, 13),
+                       ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
+            plt.legend(title='Year', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+
+
+            st.pyplot(plt)
+
+
+
+
+
+
+
+
+
+            if len(dataYear_ChartVariablenAuswahl) > 1:
+
+                st.subheader("")
+                st.subheader("Comparison of " + str(dataYear_ChartVariablenAuswahl))
+
+
+                lineShapeAuswahl = 'spline'
+
+                if st.checkbox("Edgy line shape", key="monthlySpendingsAll"):
+                    lineShapeAuswahl = 'linear'
+
+                figPlotlyLinechart_data_Year = px.line(data_Year_df, x=data_Year_df.index,
+                                                           y=dataYear_ChartVariablenAuswahl,
+                                                            line_shape=lineShapeAuswahl,
+                                                           # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
+                                                          markers=True,
+                                                           # Animation:
+                                                           # range_x=[0, gesamtBudget*1000],
+                                                           #range_y=[0, 100],
+                                                           #animation_frame=data_Year_df.index,
+                                                           )
+
+                # Change grid color and axis colors
+                figPlotlyLinechart_data_Year.update_xaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                              gridcolor='Black')
+                figPlotlyLinechart_data_Year.update_yaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                              gridcolor='Black')
+
+                st.plotly_chart(figPlotlyLinechart_data_Year, use_container_width=True)
+
+
+
 
 
 
             #ThomasTestetScatter Trend Chart
+            st.subheader("")
             st.subheader("Trend for " + dataYear_ChartVariablenAuswahl[0] )
 
             trendlineChoice = st.selectbox("Choose Trendline",
@@ -1043,7 +1110,8 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
             #simple variante -
-            st.bar_chart(data_Year_df, y=dataYear_ChartVariablenAuswahl, use_container_width=True)
+            if len(dataYear_ChartVariablenAuswahl)==1:
+                st.bar_chart(data_Year_df, y=dataYear_ChartVariablenAuswahl, use_container_width=True)
 
 
             st.write(data_Year_df)
