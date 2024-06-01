@@ -1,5 +1,6 @@
 #2024.04.23.11 jahresvergleiche hinzugefügt
 #2024.06.01 chart-typ auswahlmöglichkeit bei history
+#2024.06.01.22 schönere px chart-typ mit auswahlmöglichkeit bei history
 
 import streamlit as st
 import pandas as pd
@@ -911,7 +912,7 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
 
-    if option == "History": ############################
+    if option == "History": ########################################################################
 
         st.subheader("")
         st.title("Historical data for " + Ortseingabe)
@@ -998,17 +999,15 @@ if st.session_state.ortsEingabeSpeicher != "":
             df_compareYears['Month'] = df_compareYears['Date'].dt.month
 
 
-
-
-
             df_compareYears = df_compareYears.rename(columns={'tavg': 'Average Temperatures','tmin': 'Min Temperatures' ,'tmax': 'Max Temperatures','prcp': 'Average Preciptation','wspd': 'Average Windspeeds','snow': 'Snowfall'})
 
-            #st.write(df_compareYears)
+            #st.write("df_compareYears: ",df_compareYears)
 
             # Group by year and month, calculate the average temperature
             monthly_avg = df_compareYears.groupby(['Year', 'Month'])[dataYear_ChartVariablenAuswahl[0]].mean().unstack()
 
-            #st.write(monthly_avg)
+            #st.write("monthly_avg :",monthly_avg)
+
 
             if len(dataYear_ChartVariablenAuswahl) > 1:
 
@@ -1040,47 +1039,44 @@ if st.session_state.ortsEingabeSpeicher != "":
 
                 st.plotly_chart(figPlotlyLinechart_data_Year, use_container_width=True)
 
+                #st.write("data_Year_df: ",data_Year_df)
 
 
 
 
 
 
-            import matplotlib.pyplot as plt
-            #import mplcursors
+
+            monthly_avg_T = monthly_avg.T
+
+            # Dictionary to map month numbers to month names
+            month_names = {
+                1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+                7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
+            }
+
+            # Rename the index using the map function
+            monthly_avg_T.index = monthly_avg_T.index.map(month_names)
+
+            #st.write("monthly_avg_T :", monthly_avg_T)
+
+
+
 
             # User selects the chart type
             chart_type = st.selectbox('Select chart type', ['Line Chart', 'Bar Chart'])
 
-            st.subheader(dataYear_ChartVariablenAuswahl[0] + ' per Month for Each Year')
-
-
-            # Plot the data based on the selected chart type
+            # Plot the data using Plotly based on the selected chart type
             if chart_type == 'Line Chart':
-                for year, temps in monthly_avg.iterrows():
-                    plt.plot(temps, label=year)
+                figPlotlyChartMonth = px.line(monthly_avg_T, x=monthly_avg_T.index, y=compareYearsSelection, line_shape='spline', markers=True)
+            else:
+                figPlotlyChartMonth = px.bar(monthly_avg_T, x=monthly_avg_T.index, y=compareYearsSelection, barmode='group')
 
-                plt.xlabel('Month')
-                plt.ylabel(dataYear_ChartVariablenAuswahl[0])
-                #plt.title(dataYear_ChartVariablenAuswahl + ' per Month for Each Year')
-                plt.xticks(range(1, 13),
-                           ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
-                plt.legend(title='Year', bbox_to_anchor=(1.05, 1), loc='upper left')
+            # Change grid color and axis colors
+            figPlotlyChartMonth.update_xaxes(showline=True, linewidth=0.1, linecolor='Black', gridcolor='Black')
+            figPlotlyChartMonth.update_yaxes(showline=True, linewidth=0.1, linecolor='Black', gridcolor='Black')
 
-            else:  # Bar Chart
-                monthly_avg.T.plot(kind='bar', figsize=(10, 6))
-
-                plt.xlabel('Month')
-                plt.ylabel(dataYear_ChartVariablenAuswahl[0])
-                #plt.title(dataYear_ChartVariablenAuswahl + ' per Month for Each Year')
-                plt.xticks(range(12),
-                           ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                           rotation=45)
-                plt.legend(title='Year', bbox_to_anchor=(1.05, 1), loc='upper left')
-
-            # Add hover tooltips using mplcursors
-            #mplcursors.cursor(hover=True)
-            st.pyplot(plt)
+            st.plotly_chart(figPlotlyChartMonth, use_container_width=True)
 
 
 
