@@ -9,7 +9,7 @@ reverse_geocoder==1.5.1
 seaborn==0.11.2
 statsmodels==0.13.2
 #streamlit==1.28.1
-streamlit
+streamlit==1.35.0
 openmeteo_requests==1.1.0
 python_weather==1.1.0
 requests_cache==1.1.1
