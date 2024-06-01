@@ -1,4 +1,5 @@
-#2024.04.23.11 jahresvergleiche hinzugefüht
+#2024.04.23.11 jahresvergleiche hinzugefügt
+#2024.06.01 chart-typ auswahlmöglichkeit bei history
 
 import streamlit as st
 import pandas as pd
@@ -976,7 +977,7 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
             dataYear_ChartVariablenAuswahl = st.multiselect(
-                "Choose Variables for the chart",
+                "Choose Variable(s)",
                 options=data_Year_df.columns, default="Average Temperatures")
 
 
@@ -1009,31 +1010,6 @@ if st.session_state.ortsEingabeSpeicher != "":
 
             #st.write(monthly_avg)
 
-            import matplotlib.pyplot as plt
-
-            for year, temps in monthly_avg.iterrows():
-                plt.plot(temps, label=year)
-
-            plt.xlabel('Month')
-
-            plt.ylabel(dataYear_ChartVariablenAuswahl[0])
-            plt.title(dataYear_ChartVariablenAuswahl[0] + ' per Month for Each Year')
-            plt.xticks(range(1, 13),
-                       ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
-            plt.legend(title='Year', bbox_to_anchor=(1.05, 1), loc='upper left')
-
-
-
-            st.pyplot(plt)
-
-
-
-
-
-
-
-
-
             if len(dataYear_ChartVariablenAuswahl) > 1:
 
                 st.subheader("")
@@ -1063,6 +1039,54 @@ if st.session_state.ortsEingabeSpeicher != "":
                                                               gridcolor='Black')
 
                 st.plotly_chart(figPlotlyLinechart_data_Year, use_container_width=True)
+
+
+
+
+
+
+
+            import matplotlib.pyplot as plt
+            #import mplcursors
+
+            # User selects the chart type
+            chart_type = st.selectbox('Select chart type', ['Line Chart', 'Bar Chart'])
+
+            st.subheader(dataYear_ChartVariablenAuswahl[0] + ' per Month for Each Year')
+
+
+            # Plot the data based on the selected chart type
+            if chart_type == 'Line Chart':
+                for year, temps in monthly_avg.iterrows():
+                    plt.plot(temps, label=year)
+
+                plt.xlabel('Month')
+                plt.ylabel(dataYear_ChartVariablenAuswahl[0])
+                #plt.title(dataYear_ChartVariablenAuswahl + ' per Month for Each Year')
+                plt.xticks(range(1, 13),
+                           ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
+                plt.legend(title='Year', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+            else:  # Bar Chart
+                monthly_avg.T.plot(kind='bar', figsize=(10, 6))
+
+                plt.xlabel('Month')
+                plt.ylabel(dataYear_ChartVariablenAuswahl[0])
+                #plt.title(dataYear_ChartVariablenAuswahl + ' per Month for Each Year')
+                plt.xticks(range(12),
+                           ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                           rotation=45)
+                plt.legend(title='Year', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+            # Add hover tooltips using mplcursors
+            #mplcursors.cursor(hover=True)
+            st.pyplot(plt)
+
+
+
+
+
+
 
 
 
