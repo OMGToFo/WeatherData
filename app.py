@@ -1,6 +1,7 @@
 #2024.04.23.11 jahresvergleiche hinzugefügt
 #2024.06.01 chart-typ auswahlmöglichkeit bei history
 #2024.06.01.22 schönere px chart-typ mit auswahlmöglichkeit bei history
+#2024.06.02.10 layoutverbesserung bei history
 
 import streamlit as st
 import pandas as pd
@@ -983,8 +984,8 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
 
-            st.write("")
-            st.subheader("Comparison of Years")
+
+
 
             compareYearsOptions = data.Year.unique().tolist()
             compareYearsDefault = [2021,2022,2023]
@@ -1062,9 +1063,13 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
 
-
+            st.subheader(dataYear_ChartVariablenAuswahl[0] + " per Month")
             # User selects the chart type
-            chart_type = st.selectbox('Select chart type', ['Line Chart', 'Bar Chart'])
+            selectboxlayout1, selectboxlayout2 = st.columns([20,80])
+            with selectboxlayout1:
+                chart_type = st.selectbox('Select chart type', ['Line Chart', 'Bar Chart'])
+            with selectboxlayout2:
+                st.write("")
 
             # Plot the data using Plotly based on the selected chart type
             if chart_type == 'Line Chart':
@@ -1081,15 +1086,7 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
 
-
-
-
-
-
-
-
-
-            #ThomasTestetScatter Trend Chart
+            #Trend Chart
             st.subheader("")
             st.subheader("Trend for " + dataYear_ChartVariablenAuswahl[0] )
 
