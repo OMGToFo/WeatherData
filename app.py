@@ -1664,7 +1664,7 @@ if st.session_state.ortsEingabeSpeicher != "":
             st.subheader("Min Temperatures this week in " + Ortseingabe1 + " and " + Ortseingabe2)
 
             figPlotlyLinechart_minTemp_data1_2 = px.line(daily1_2_dataframe, x='weekday',
-                                                        y=[Ortseingabe1 + ' - Windspeed',Ortseingabe2 + ' - Windspeed'],
+                                                        y=[Ortseingabe1 + ' - min Temperature',Ortseingabe2 + ' - min Temperature'],
                                                         line_shape='spline',markers=True
                                                         # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
                                                         # markers=True,
