@@ -3,6 +3,7 @@
 # 2024.06.01.22 schönere px chart-typ mit auswahlmöglichkeit bei history
 # 2024.06.02.10 layoutverbesserung bei history
 # 2024.06.08.13 neu mit compare
+# 2024.06.09.12 mit compare hourly data
 
 import streamlit as st
 import pandas as pd
@@ -1355,10 +1356,93 @@ if st.session_state.ortsEingabeSpeicher != "":
 
                     current1_cloud_cover_text = str(round(current1_cloud_cover, 0)) + "%"
 
-                    st.write("Temperature: ",current1_temperature_text)
-                    st.write("Wind: ",current1_wind_speed_text)
-                    st.write("Rain: ",current1_rain_text)
-                    st.write("Cloud cover: ",current1_cloud_cover_text)
+                    st.write("Current Temperature: ",current1_temperature_text)
+                    st.write("Current Wind: ",current1_wind_speed_text)
+                    st.write("Current Rain: ",current1_rain_text)
+                    st.write("Current Cloud cover: ",current1_cloud_cover_text)
+
+
+
+
+                    hourly1 = response1.Hourly()
+                    hourly1_temperature_2m = hourly1.Variables(0).ValuesAsNumpy()
+                    hourly1_precipitation_probability = hourly1.Variables(1).ValuesAsNumpy()
+                    hourly1_precipitation = hourly1.Variables(2).ValuesAsNumpy()
+                    hourly1_rain = hourly1.Variables(3).ValuesAsNumpy()
+                    hourly1_snowfall = hourly1.Variables(4).ValuesAsNumpy()
+                    hourly1_cloud_cover_high = hourly1.Variables(5).ValuesAsNumpy()
+                    hourly1_wind_speed_10m = hourly1.Variables(6).ValuesAsNumpy()
+                    hourly1_snow_depth = hourly1.Variables(7).ValuesAsNumpy()
+                    hourly1_pressure_msl = hourly1.Variables(8).ValuesAsNumpy()
+                    hourly1_cloud_cover = hourly1.Variables(9).ValuesAsNumpy()
+                    hourly1_visibility = hourly1.Variables(10).ValuesAsNumpy()
+                    hourly1_wind_direction_10m = hourly1.Variables(11).ValuesAsNumpy()
+                    hourly1_uv_index = hourly1.Variables(12).ValuesAsNumpy()
+                    hourly1_sunshine_duration = hourly1.Variables(13).ValuesAsNumpy()
+
+                    hourly1_data = {"date": pd.date_range(
+                        start=pd.to_datetime(hourly1.Time(), unit="s"),
+                        end=pd.to_datetime(hourly1.TimeEnd(), unit="s"),
+                        freq=pd.Timedelta(seconds=hourly1.Interval()),
+                        inclusive="left"
+                    )}
+                    hourly1_data["temperature_2m"] = hourly1_temperature_2m
+                    hourly1_data["precipitation_probability"] = hourly1_precipitation_probability
+                    hourly1_data["precipitation"] = hourly1_precipitation
+                    hourly1_data["rain"] = hourly1_rain
+                    hourly1_data["snowfall"] = hourly1_snowfall
+                    hourly1_data["cloud_cover"] = hourly1_cloud_cover
+                    hourly1_data["wind_speed_10m"] = hourly1_wind_speed_10m
+                    hourly1_data["visibility"] = hourly1_visibility
+                    hourly1_data["wind_direction_10m"] = hourly1_wind_direction_10m
+                    hourly1_data["uv_index"] = hourly1_uv_index
+                    hourly1_data["sunshine_duration"] = (hourly1_sunshine_duration / 60).round(0)
+                    #hourly1_data["hour"] = hourly1_data.index()
+
+                    hourly1_dataframe = pd.DataFrame(data=hourly1_data)
+                    todaytemp_data1_dataframe = hourly1_dataframe.head(24)
+
+                    hourly1Expander = st.expander("Table with hourly data for 24 hours >>>")
+                    with hourly1Expander:
+                        st.write(todaytemp_data1_dataframe)
+
+                    hourly1_variableAuswahl = ['temperature_2m', 'precipitation_probability', 'precipitation',
+                                              'rain', 'snowfall', 'cloud_cover',
+                                              'wind_speed_10m', 'visibility', 'wind_direction_10m','uv_index','sunshine_duration']
+
+                    hourly1_variableSelekt = st.multiselect("Weather variable(s): ", hourly1_variableAuswahl,
+                                                           default=['temperature_2m', 'rain'])
+
+
+
+                    figPlotlyLinechart_hourlyDay_data1 = px.line(todaytemp_data1_dataframe, x=todaytemp_data1_dataframe.index,
+                                                                y=hourly1_variableSelekt,
+                                                                line_shape='spline',
+                                                                # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
+                                                                markers=True,
+                                                                # Animation:
+                                                                # range_x=[0, gesamtBudget*1000],
+                                                                # range_y=[0, forecastYhatMax],
+                                                                # animation_frame="ds)
+                                                                )
+
+                    # Change grid color and axis colors
+                    figPlotlyLinechart_hourlyDay_data1.update_xaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                                   gridcolor='Black')
+                    figPlotlyLinechart_hourlyDay_data1.update_yaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                                   gridcolor='Black')
+
+                    figPlotlyLinechart_hourlyDay_data1.layout.update(showlegend=True)
+                    figPlotlyLinechart_hourlyDay_data1.update_layout(
+                        legend=dict(yanchor="top", y=0.9, xanchor="left", x=0.4))
+
+                    st.plotly_chart(figPlotlyLinechart_hourlyDay_data1, use_container_width=True)
+
+
+
+
+
+
 
                     daily1 = response1.Daily()
                     daily1_temperature_2m_max = daily1.Variables(0).ValuesAsNumpy()
@@ -1402,7 +1486,7 @@ if st.session_state.ortsEingabeSpeicher != "":
                     daily1_dataframe['weekday'] = daily1_dataframe['date'].dt.day_name()
                     daily1_dataframe = daily1_dataframe.sort_values(by='date')
 
-                    with st.expander("Show table"):
+                    with st.expander("Table with data per day of this week >>>"):
                         st.write("daily1_dataframe: ", daily1_dataframe)
 
                     daily1_variableAuswahl = ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum',
@@ -1522,10 +1606,91 @@ if st.session_state.ortsEingabeSpeicher != "":
 
                     current2_cloud_cover_text = str(round(current2_cloud_cover, 0)) + "%"
 
-                    st.write("Temperature: ",current2_temperature_text)
-                    st.write("Wind: ",current2_wind_speed_text)
-                    st.write("Rain: ",current2_rain_text)
-                    st.write("Cloud cover: ",current2_cloud_cover_text)
+                    st.write("Current Temperature: ",current2_temperature_text)
+                    st.write("Current Wind: ",current2_wind_speed_text)
+                    st.write("Current Rain: ",current2_rain_text)
+                    st.write("Current Cloud cover: ",current2_cloud_cover_text)
+
+
+                    hourly2 = response2.Hourly()
+                    hourly2_temperature_2m = hourly2.Variables(0).ValuesAsNumpy()
+                    hourly2_precipitation_probability = hourly2.Variables(1).ValuesAsNumpy()
+                    hourly2_precipitation = hourly2.Variables(2).ValuesAsNumpy()
+                    hourly2_rain = hourly2.Variables(3).ValuesAsNumpy()
+                    hourly2_snowfall = hourly2.Variables(4).ValuesAsNumpy()
+                    hourly2_cloud_cover_high = hourly2.Variables(5).ValuesAsNumpy()
+                    hourly2_wind_speed_10m = hourly2.Variables(6).ValuesAsNumpy()
+                    hourly2_snow_depth = hourly2.Variables(7).ValuesAsNumpy()
+                    hourly2_pressure_msl = hourly2.Variables(8).ValuesAsNumpy()
+                    hourly2_cloud_cover = hourly2.Variables(9).ValuesAsNumpy()
+                    hourly2_visibility = hourly2.Variables(10).ValuesAsNumpy()
+                    hourly2_wind_direction_10m = hourly2.Variables(11).ValuesAsNumpy()
+                    hourly2_uv_index = hourly2.Variables(12).ValuesAsNumpy()
+                    hourly2_sunshine_duration = hourly2.Variables(13).ValuesAsNumpy()
+
+                    hourly2_data = {"date": pd.date_range(
+                        start=pd.to_datetime(hourly2.Time(), unit="s"),
+                        end=pd.to_datetime(hourly2.TimeEnd(), unit="s"),
+                        freq=pd.Timedelta(seconds=hourly2.Interval()),
+                        inclusive="left"
+                    )}
+                    hourly2_data["temperature_2m"] = hourly2_temperature_2m
+                    hourly2_data["precipitation_probability"] = hourly2_precipitation_probability
+                    hourly2_data["precipitation"] = hourly2_precipitation
+                    hourly2_data["rain"] = hourly2_rain
+                    hourly2_data["snowfall"] = hourly2_snowfall
+                    hourly2_data["cloud_cover"] = hourly2_cloud_cover
+                    hourly2_data["wind_speed_10m"] = hourly2_wind_speed_10m
+                    hourly2_data["visibility"] = hourly2_visibility
+                    hourly2_data["wind_direction_10m"] = hourly2_wind_direction_10m
+                    hourly2_data["uv_index"] = hourly2_uv_index
+                    hourly2_data["sunshine_duration"] = (hourly2_sunshine_duration / 60).round(0)
+                    #hourly2_data["hour"] = hourly2_data.index()
+
+                    hourly2_dataframe = pd.DataFrame(data=hourly2_data)
+                    todaytemp_data2_dataframe = hourly2_dataframe.head(24)
+
+                    hourly2Expander = st.expander("Table with hourly data for 24 hours >>>")
+                    with hourly2Expander:
+                        st.write(todaytemp_data2_dataframe)
+
+                    hourly2_variableAuswahl = ['temperature_2m', 'precipitation_probability', 'precipitation',
+                                              'rain', 'snowfall', 'cloud_cover',
+                                              'wind_speed_10m', 'visibility', 'wind_direction_10m','uv_index','sunshine_duration']
+
+
+
+
+                    hourly2_variableSelekt = st.multiselect("Weather variable(s):", hourly2_variableAuswahl,default=['temperature_2m','rain'])
+
+
+
+                    figPlotlyLinechart_hourlyDay_data2 = px.line(todaytemp_data2_dataframe, x=todaytemp_data2_dataframe.index,
+                                                                y=hourly2_variableSelekt,
+                                                                line_shape='spline',
+                                                                # color_discrete_map={'GESAMTReichweite' : FARBE_GESAMT,'TVReichweite' : FARBE_TV,'ZATTOOReichweite' : FARBE_ZATTOO,'KINOReichweite' : FARBE_KINO,'DOOHReichweite' : FARBE_DOOH,'OOHReichweite' : FARBE_OOH,'FACEBOOKReichweite' : FARBE_FACEBOOK,'YOUTUBEReichweite' : FARBE_YOUTUBE,'ONLINEVIDEOReichweite' : FARBE_ONLINEVIDEO,'ONLINEReichweite' : FARBE_ONLINE, 'RADIOReichweite' : FARBE_RADIO},
+                                                                markers=True,
+                                                                # Animation:
+                                                                # range_x=[0, gesamtBudget*1000],
+                                                                # range_y=[0, forecastYhatMax],
+                                                                # animation_frame="ds)
+                                                                )
+
+                    # Change grid color and axis colors
+                    figPlotlyLinechart_hourlyDay_data2.update_xaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                                   gridcolor='Black')
+                    figPlotlyLinechart_hourlyDay_data2.update_yaxes(showline=True, linewidth=0.1, linecolor='Black',
+                                                                   gridcolor='Black')
+
+                    figPlotlyLinechart_hourlyDay_data2.layout.update(showlegend=True)
+                    figPlotlyLinechart_hourlyDay_data2.update_layout(
+                        legend=dict(yanchor="top", y=0.9, xanchor="left", x=0.4))
+
+                    st.plotly_chart(figPlotlyLinechart_hourlyDay_data2, use_container_width=True)
+
+
+
+
 
                     daily2 = response2.Daily()
                     daily2_temperature_2m_max = daily2.Variables(0).ValuesAsNumpy()
@@ -1569,7 +1734,7 @@ if st.session_state.ortsEingabeSpeicher != "":
                     daily2_dataframe['weekday'] = daily2_dataframe['date'].dt.day_name()
                     daily2_dataframe = daily2_dataframe.sort_values(by='date')
 
-                    with st.expander("Show Table"):
+                    with st.expander("Table with data per day of this week >>>"):
                         st.write("daily2_dataframe: ", daily2_dataframe)
 
                     daily2_variableAuswahl = ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum',
