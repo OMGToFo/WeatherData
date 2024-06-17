@@ -4,6 +4,7 @@
 # 2024.06.02.10 layoutverbesserung bei history
 # 2024.06.08.13 neu mit compare
 # 2024.06.09.12 mit compare hourly data
+# 2024.06.17.23 layoutverbesserungen
 
 import streamlit as st
 import pandas as pd
@@ -1401,7 +1402,8 @@ if st.session_state.ortsEingabeSpeicher != "":
 
                     hourly1_dataframe = pd.DataFrame(data=hourly1_data)
                     todaytemp_data1_dataframe = hourly1_dataframe.head(24)
-
+                    st.subheader("")
+                    st.subheader("24 hours weather in " + Ortseingabe1)
                     hourly1Expander = st.expander("Table with hourly data for 24 hours >>>")
                     with hourly1Expander:
                         st.write(todaytemp_data1_dataframe)
@@ -1486,6 +1488,8 @@ if st.session_state.ortsEingabeSpeicher != "":
                     daily1_dataframe['weekday'] = daily1_dataframe['date'].dt.day_name()
                     daily1_dataframe = daily1_dataframe.sort_values(by='date')
 
+                    st.subheader("")
+                    st.subheader("This week's weather in " + Ortseingabe1)
                     with st.expander("Table with data per day of this week >>>"):
                         st.write("daily1_dataframe: ", daily1_dataframe)
 
@@ -1650,6 +1654,8 @@ if st.session_state.ortsEingabeSpeicher != "":
                     hourly2_dataframe = pd.DataFrame(data=hourly2_data)
                     todaytemp_data2_dataframe = hourly2_dataframe.head(24)
 
+                    st.subheader("")
+                    st.subheader("24 hours weather in " + Ortseingabe2)
                     hourly2Expander = st.expander("Table with hourly data for 24 hours >>>")
                     with hourly2Expander:
                         st.write(todaytemp_data2_dataframe)
@@ -1734,6 +1740,8 @@ if st.session_state.ortsEingabeSpeicher != "":
                     daily2_dataframe['weekday'] = daily2_dataframe['date'].dt.day_name()
                     daily2_dataframe = daily2_dataframe.sort_values(by='date')
 
+                    st.subheader("")
+                    st.subheader("This week's weather in " + Ortseingabe2)
                     with st.expander("Table with data per day of this week >>>"):
                         st.write("daily2_dataframe: ", daily2_dataframe)
 
@@ -1794,6 +1802,7 @@ if st.session_state.ortsEingabeSpeicher != "":
             daily1_2_dataframe[Ortseingabe1 + ' - Windspeed'] = daily1_dataframe['wind_speed_10m_max']
             daily1_2_dataframe[Ortseingabe2 + ' - Windspeed'] = daily2_dataframe['wind_speed_10m_max']
 
+            st.subheader("")
             with st.expander("Show table with data for the week >>>"):
                 st.write("daily1_2_dataframe: ", daily1_2_dataframe)
 
