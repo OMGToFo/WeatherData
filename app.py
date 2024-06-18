@@ -5,6 +5,7 @@
 # 2024.06.08.13 neu mit compare
 # 2024.06.09.12 mit compare hourly data
 # 2024.06.17.23 layoutverbesserungen
+# 2024.06.18.23 meanvalues comparison
 
 import streamlit as st
 import pandas as pd
@@ -1408,6 +1409,17 @@ if st.session_state.ortsEingabeSpeicher != "":
                     with hourly1Expander:
                         st.write(todaytemp_data1_dataframe)
 
+                    mean1hourlyCol1, mean1hourlyCol2, mean1hourlyCol3, mean1hourlyCol4 = st.columns(4,gap="small")
+                    with mean1hourlyCol1:
+                        st.write("Mean Temp: ",todaytemp_data1_dataframe['temperature_2m'].mean().round(1))
+                    with mean1hourlyCol2:
+                        st.write("Rain sum: ", todaytemp_data1_dataframe['rain'].sum().round(0))
+                    with mean1hourlyCol3:
+                        st.write("Wind mean: ", todaytemp_data1_dataframe['wind_speed_10m'].mean().round(0))
+                    with mean1hourlyCol4:
+                        st.write("Sunshine: ", todaytemp_data1_dataframe['sunshine_duration'].mean().round(0))
+
+
                     hourly1_variableAuswahl = ['temperature_2m', 'precipitation_probability', 'precipitation',
                                               'rain', 'snowfall', 'cloud_cover',
                                               'wind_speed_10m', 'visibility', 'wind_direction_10m','uv_index','sunshine_duration']
@@ -1492,6 +1504,19 @@ if st.session_state.ortsEingabeSpeicher != "":
                     st.subheader("This week's weather in " + Ortseingabe1)
                     with st.expander("Table with data per day of this week >>>"):
                         st.write("daily1_dataframe: ", daily1_dataframe)
+
+                    mean1dailyCol1, mean1dailyCol2, mean1dailyCol3 = st.columns(3,gap="small")
+                    with mean1dailyCol1:
+                        st.write("Mean Temp: ",daily1_dataframe['temperature_2m_max'].mean().round(1))
+                    with mean1dailyCol2:
+                        st.write("Rain sum: ", daily1_dataframe['rain_sum'].sum().round(0))
+                    with mean1dailyCol3:
+                        st.write("Wind mean: ", daily1_dataframe['wind_speed_10m_max'].mean().round(0))
+
+
+
+
+
 
                     daily1_variableAuswahl = ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum',
                                               'rain_sum', 'sunshine_duration', 'wind_speed_10m_max',
@@ -1660,6 +1685,19 @@ if st.session_state.ortsEingabeSpeicher != "":
                     with hourly2Expander:
                         st.write(todaytemp_data2_dataframe)
 
+
+                    mean2hourlyCol1, mean2hourlyCol2, mean2hourlyCol3, mean2hourlyCol4 = st.columns(4,gap="small")
+                    with mean2hourlyCol1:
+                        st.write("Mean Temp: ",todaytemp_data2_dataframe['temperature_2m'].mean().round(1))
+                    with mean2hourlyCol2:
+                        st.write("Rain sum: ", todaytemp_data2_dataframe['rain'].sum().round(0))
+                    with mean2hourlyCol3:
+                        st.write("Wind mean: ", todaytemp_data2_dataframe['wind_speed_10m'].mean().round(0))
+                    with mean2hourlyCol4:
+                        st.write("Sunshine: ", todaytemp_data2_dataframe['sunshine_duration'].mean().round(0))
+
+
+
                     hourly2_variableAuswahl = ['temperature_2m', 'precipitation_probability', 'precipitation',
                                               'rain', 'snowfall', 'cloud_cover',
                                               'wind_speed_10m', 'visibility', 'wind_direction_10m','uv_index','sunshine_duration']
@@ -1744,6 +1782,16 @@ if st.session_state.ortsEingabeSpeicher != "":
                     st.subheader("This week's weather in " + Ortseingabe2)
                     with st.expander("Table with data per day of this week >>>"):
                         st.write("daily2_dataframe: ", daily2_dataframe)
+
+                    mean2dailyCol1, mean2dailyCol2, mean2dailyCol3 = st.columns(3,gap="small")
+                    with mean2dailyCol1:
+                        st.write("Mean Temp: ",daily2_dataframe['temperature_2m_max'].mean().round(1))
+                    with mean2dailyCol2:
+                        st.write("Rain sum: ", daily2_dataframe['rain_sum'].sum().round(0))
+                    with mean2dailyCol3:
+                        st.write("Wind mean: ", daily2_dataframe['wind_speed_10m_max'].mean().round(0))
+
+
 
                     daily2_variableAuswahl = ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum',
                                               'rain_sum', 'sunshine_duration', 'wind_speed_10m_max',
