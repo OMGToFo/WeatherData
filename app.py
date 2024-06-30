@@ -6,6 +6,8 @@
 # 2024.06.09.12 mit compare hourly data
 # 2024.06.17.23 layoutverbesserungen
 # 2024.06.18.23 meanvalues comparison
+# 2024.06.23.12 mit monthly historische Comparison
+# 2024.06.30.20 mit vielen Updates bei historische Comparison
 
 import streamlit as st
 import pandas as pd
@@ -58,7 +60,9 @@ from retry_requests import retry
 
 from streamlit_datalist import stDatalist
 
-st.set_page_config(page_title="Simple weather data", page_icon="🌤️", layout="wide", initial_sidebar_state="auto")
+import numpy as np
+
+st.set_page_config(page_title="Simple weather data", page_icon="🌤️", layout="wide", initial_sidebar_state="collapsed")
 
 # === Variables mit session state ====#
 
@@ -74,6 +78,9 @@ if 'forecastVariableSpeicher' not in st.session_state:
 
 if 'ortsEingabeSpeicher' not in st.session_state:
     st.session_state.ortsEingabeSpeicher = "Zurich"
+
+if 'ortsEingabeSpeicher2' not in st.session_state:
+    st.session_state.ortsEingabeSpeicher2 = "Wien"
 
 if 'latSpeicher' not in st.session_state:
     st.session_state.latSpeicher = 45.0
@@ -270,6 +277,8 @@ with st.sidebar.form("Settings"):  #############################################
 
     data = Daily(Ort, startInput, endInput)
 
+
+
     # ProphetforecastStarten = st.toggle("Forecast with Prophet", key="forecast")
     ProphetforecastStarten = True
 
@@ -331,6 +340,10 @@ if st.session_state.ortsEingabeSpeicher != "":
     # delta=todayMaxMinDiff.round(1))
     # st.sidebar.metric(label="Today's Min Temperature", value=todayMinText)
     # st.sidebar.metric(label="Today's Windspeed", value=todayWspdText)
+
+
+
+
 
     # OPENMETEO  ##############################################################################################
 
@@ -896,7 +909,7 @@ if st.session_state.ortsEingabeSpeicher != "":
             df_compareYears = data[data["Year"].isin(compareYearsSelection)]
 
             df_compareYears['Month'] = df_compareYears['Date'].dt.month
-            df_compareYears['Month'] = df_compareYears['Date'].dt.month
+
 
             df_compareYears = df_compareYears.rename(
                 columns={'tavg': 'Average Temperatures', 'tmin': 'Min Temperatures', 'tmax': 'Max Temperatures',
@@ -951,7 +964,7 @@ if st.session_state.ortsEingabeSpeicher != "":
             # Rename the index using the map function
             monthly_avg_T.index = monthly_avg_T.index.map(month_names)
 
-            # st.write("monthly_avg_T :", monthly_avg_T)
+            #st.write("monthly_avg_T :", monthly_avg_T)
 
             st.subheader(dataYear_ChartVariablenAuswahl[0] + " per Month")
             # User selects the chart type
@@ -1558,7 +1571,13 @@ if st.session_state.ortsEingabeSpeicher != "":
 
         with compareCol3:
             st.info("Location 2:")
-            Ortseingabe2 = st.text_input(" ", value="", help="Location to compare", key="Ortseingabe2")
+            Ortseingabe2 = st.text_input(" ", value=st.session_state.ortsEingabeSpeicher2, help="Location to compare", key="Ortseingabe2")
+
+            # Ortseingabe = st.text_input("", value=OrtseingabeStartwert, help="Location")
+            st.session_state.ortsEingabeSpeicher2 = Ortseingabe2
+
+
+
 
             if Ortseingabe2:
 
@@ -1960,3 +1979,332 @@ if st.session_state.ortsEingabeSpeicher != "":
                 legend=dict(yanchor="top", y=0.9, xanchor="left", x=0.4))
 
             st.plotly_chart(figPlotlyLinechart_WindSpeed_data1_2, use_container_width=True)
+
+
+
+
+            #Historical comparison
+            st.divider()
+            st.subheader("")
+
+
+            historicalDateCompareCol1,historicalDateCompareCol2,historicalDateCompareCol3 = st.columns([40,30,30])
+
+            with historicalDateCompareCol1:
+                st.subheader("Historical comparison of " + Ortseingabe1 + " and " + Ortseingabe2)
+
+
+            with historicalDateCompareCol2:
+                startInputCompareDate = st.date_input("Start Date", date(2023, 1, 1), key="startCompare")
+
+
+            with historicalDateCompareCol3:
+                endInputCompareDate = st.date_input("End Date", date(2023, 12, 31), key="endCompare")
+
+            st.subheader("")
+
+            historicalLocationCompareCol1, historicalLocationCompareCol2 = st.columns(2)
+
+            # Convert datetime.date objects to datetime.datetime objects
+            startInputCompareDate = datetime(startInputCompareDate.year, startInputCompareDate.month, startInputCompareDate.day)
+            endInputCompareDate = datetime(endInputCompareDate.year, endInputCompareDate.month, endInputCompareDate.day)
+
+
+            #Fetch Data from meteostat.net
+
+            # Create Point for Ort1
+            Ort1_Point = Point(nearestWeatherstation_latitude1, nearestWeatherstation_longitude1, nearestWeatherstation_elevation1)
+
+            # Get daily data for year
+            data_Ort1 = Daily(Ort1_Point, startInputCompareDate, endInputCompareDate)
+            data_Ort1 = data_Ort1.fetch()
+
+            data_Ort1.reset_index()
+
+            data_Ort1["Date"] = (data_Ort1.index)
+
+            data_Ort1['Year'] = data_Ort1['Date'].dt.year
+            data_Ort1['Month'] = data_Ort1['Date'].dt.month
+
+
+
+
+            data_Ort1 = data_Ort1.rename(
+                columns={'tavg': 'Average Temperatures', 'tmin': 'Min Temperatures', 'tmax': 'Max Temperatures',
+                         'prcp': 'Average Preciptation', 'wspd': 'Average Windspeeds', 'snow': 'Snowfall'})
+
+            data_Ort1['Location'] = Ortseingabe1
+            # Now convert the 'Year' column to string values
+            data_Ort1['Year'] = data_Ort1['Year'].astype(str)
+            data_Ort1['Location_Year'] = data_Ort1['Location'] + '_' + data_Ort1['Year']
+
+
+            #st.write("data_Ort1: ",data_Ort1)
+
+            ChartVariablenAuswahlOptions = ['Average Temperatures','Min Temperatures', 'Max Temperatures','Average Preciptation','Average Windspeeds','Snowfall']
+
+            variableSelectCol1, variableSelectCol2 = st.columns(2)
+
+            with variableSelectCol1:
+                data_Ort1_ChartVariablenAuswahl = st.selectbox(
+                "Choose Chart Variable:",
+                options=ChartVariablenAuswahlOptions)
+
+            with historicalLocationCompareCol1:
+                #st.write("Average Temperature - " + Ortseingabe1 +" : ", data_Ort1['Average Temperatures'].mean().round(1))
+                #st.write("Sum Preciptation - " + Ortseingabe1 + " : ", data_Ort1['Average Preciptation'].sum().round(1))
+                #st.write("Sum Snow - " + Ortseingabe1 + " : ", data_Ort1['Snowfall'].sum().round(1))
+                #st.write("Average Windspeed - " + Ortseingabe1 +" : ", data_Ort1['Average Windspeeds'].mean().round(1))
+
+                st.info(Ortseingabe1)
+
+                st.metric(label="Average Temperature - " + Ortseingabe1 + " (C)", value=data_Ort1['Average Temperatures'].mean().round(1))
+                st.metric(label="Sum Preciptation - " + Ortseingabe1 + " (mm)", value=data_Ort1['Average Preciptation'].sum().round(1))
+                st.metric(label="Sum Snow - " + Ortseingabe1 + " (mm)", value=data_Ort1['Snowfall'].sum().round(1))
+                st.metric("Average Windspeed - " + Ortseingabe1 +" : ", data_Ort1['Average Windspeeds'].mean().round(1))
+
+            # Group by year and month, calculate the average temperature
+            monthly_avg_Ort1 = data_Ort1.groupby(['Year','Month'])[data_Ort1_ChartVariablenAuswahl].mean().unstack()
+
+
+            monthly_avg_Ort1['Location'] = Ortseingabe1
+            # Resetting the index to make 'Year' a regular column
+            monthly_avg_Ort1 = monthly_avg_Ort1.reset_index()
+            # Now convert the 'Year' column to string values
+            monthly_avg_Ort1['Year'] = monthly_avg_Ort1['Year'].astype(str)
+            monthly_avg_Ort1['Location_Year'] = monthly_avg_Ort1['Location'] + '_' + monthly_avg_Ort1['Year']
+
+            #st.write("monthly_avg_Ort1: ",monthly_avg_Ort1)
+
+
+
+
+
+
+            # Create Point for Ort2
+            Ort2_Point = Point(nearestWeatherstation_latitude2, nearestWeatherstation_longitude2, nearestWeatherstation_elevation2)
+
+            # Get daily data for year
+            data_Ort2 = Daily(Ort2_Point, startInputCompareDate, endInputCompareDate)
+            data_Ort2 = data_Ort2.fetch()
+
+
+
+            data_Ort2.reset_index()
+
+            data_Ort2["Date"] = (data_Ort2.index)
+
+            data_Ort2['Year'] = data_Ort2['Date'].dt.year
+            data_Ort2['Month'] = data_Ort2['Date'].dt.month
+
+            data_Ort2 = data_Ort2.rename(
+                columns={'tavg': 'Average Temperatures', 'tmin': 'Min Temperatures', 'tmax': 'Max Temperatures',
+                         'prcp': 'Average Preciptation', 'wspd': 'Average Windspeeds', 'snow': 'Snowfall'})
+
+
+            data_Ort2['Location'] = Ortseingabe2
+
+            # Now convert the 'Year' column to string values
+            data_Ort2['Year'] = data_Ort2['Year'].astype(str)
+            data_Ort2['Location_Year'] = data_Ort2['Location'] + '_' + data_Ort2['Year']
+
+            #st.write("data_Ort2: ",data_Ort2)
+
+
+            with historicalLocationCompareCol2:
+                #st.write("Average Temperature - " + Ortseingabe2 +" : ", data_Ort2['Average Temperatures'].mean().round(1))
+                #st.write("Sum Preciptation - " + Ortseingabe2 + " : ", data_Ort2['Average Preciptation'].sum().round(1))
+                #st.write("Sum Snow - " + Ortseingabe2 + " : ", data_Ort2['Snowfall'].sum().round(1))
+                #st.write("Average Windspeed - " + Ortseingabe2 +" : ", data_Ort2['Average Windspeeds'].mean().round(1))
+
+                st.info(Ortseingabe2)
+
+                st.metric(label="Average Temperature - " + Ortseingabe2 + " (C)", value=data_Ort2['Average Temperatures'].mean().round(1))
+                st.metric(label="Sum Preciptation - " + Ortseingabe2 + " (mm)", value=data_Ort2['Average Preciptation'].sum().round(1))
+                st.metric(label="Sum Snow - " + Ortseingabe2 + " (mm)", value=data_Ort2['Snowfall'].sum().round(1))
+                st.metric("Average Windspeed - " + Ortseingabe2 +" : ", data_Ort2['Average Windspeeds'].mean().round(1))
+
+
+
+            # Group by year and month, calculate the average temperature
+            monthly_avg_Ort2 = data_Ort2.groupby(['Year','Month'])[data_Ort1_ChartVariablenAuswahl].mean().unstack()
+
+            monthly_avg_Ort2['Location'] = Ortseingabe2
+            # Resetting the index to make 'Year' a regular column
+            monthly_avg_Ort2 = monthly_avg_Ort2.reset_index()
+            # Now convert the 'Year' column to string values
+            monthly_avg_Ort2['Year'] = monthly_avg_Ort2['Year'].astype(str)
+            monthly_avg_Ort2['Location_Year'] = monthly_avg_Ort2['Location'] + '_' + monthly_avg_Ort2['Year']
+
+            #st.write("monthly_avg_Ort1: ", monthly_avg_Ort1)
+            #st.write("monthly_avg_Ort2: ",monthly_avg_Ort2)
+
+            # Concatenating the two data frames
+            monthly_avg_Ort1_2_df = pd.concat([monthly_avg_Ort1, monthly_avg_Ort2], ignore_index=True)
+
+            # Ensure all column names are treated as strings
+            monthly_avg_Ort1_2_df.columns = monthly_avg_Ort1_2_df.columns.astype(str)
+
+
+            # Renaming the columns to represent month names
+            month_names = {
+                '1': 'Jan', '2': 'Feb', '3': 'Mar', '4': 'Apr', '5': 'May', '6': 'Jun',
+                '7': 'Jul', '8': 'Aug', '9': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dec'
+            }
+            monthly_avg_Ort1_2_df = monthly_avg_Ort1_2_df.rename(columns=month_names)
+
+            #st.write("monthly_avg_Ort1_2_df: ",monthly_avg_Ort1_2_df)
+
+
+
+
+
+            with variableSelectCol2:
+                # Multiselect box to select years
+                selected_years = st.multiselect(
+                    'Select years:',
+                    options=monthly_avg_Ort1_2_df['Year'].unique(),
+                    default=monthly_avg_Ort1_2_df['Year'].unique()
+                )
+
+
+
+            # Filter DataFrame based on selected years
+            monthly_avg_Ort1_2_df = monthly_avg_Ort1_2_df[monthly_avg_Ort1_2_df['Year'].isin(selected_years)]
+            #st.write("monthly_avg_Ort1_2_df: ",monthly_avg_Ort1_2_df)
+
+            locations = monthly_avg_Ort1_2_df['Location'].unique()
+
+            # Iterate over each location
+
+            locations = monthly_avg_Ort1_2_df['Location'].unique()
+
+            # Columns for layout
+            locationExtremCol1, locationExtremCol2 = st.columns(2)
+
+            for i, location in enumerate(locations):
+                location_df = monthly_avg_Ort1_2_df[monthly_avg_Ort1_2_df['Location'] == location]
+
+                # Get the entire DataFrame for current location
+                location_data = location_df.loc[:, 'Jan':'Dec']
+
+                # Find the index and column of the minimum value, ignoring NaNs
+                min_idx, min_col = np.unravel_index(np.nanargmin(location_data.values), location_data.shape)
+                min_val = np.nanmin(location_data.values)
+                min_month = location_data.columns[min_col]
+                min_year = location_df.iloc[min_idx]['Year']
+
+                # Find the index and column of the maximum value, ignoring NaNs
+                max_idx, max_col = np.unravel_index(np.nanargmax(location_data.values), location_data.shape)
+                max_val = np.nanmax(location_data.values)
+                max_month = location_data.columns[max_col]
+                max_year = location_df.iloc[max_idx]['Year']
+
+                st.subheader("")
+
+                # Display the results in columns alternately
+                if i % 2 == 0:
+                    with locationExtremCol1:
+                        st.info(f"**{location}**:")
+                        st.write(f"- Lowest value: {min_val:.2f} in {min_month} {min_year}")
+                        st.write(f"- Highest value: {max_val:.2f} in {max_month} {max_year}")
+                else:
+                    with locationExtremCol2:
+                        st.info(f"**{location}**:")
+                        st.write(f"- Lowest value: {min_val:.2f} in {min_month} {min_year}")
+                        st.write(f"- Highest value: {max_val:.2f} in {max_month} {max_year}")
+
+
+
+            # total avg per month and location - Group by 'Location' and calculate the mean for each group
+            total_avg_Ort1_2_df = monthly_avg_Ort1_2_df.groupby('Location').mean(numeric_only=True)
+            #st.write("total_avg_Ort1_2_df: ", total_avg_Ort1_2_df)
+
+
+
+            #Daten für Chart umstellen
+
+            # Deleting the 'Location' column
+            monthly_avg_Ort1_2_df = monthly_avg_Ort1_2_df.drop(columns='Location')
+
+            # Setting the 'Location_Year' column as the index
+            monthly_avg_Ort1_2_df = monthly_avg_Ort1_2_df.set_index('Location_Year')
+
+
+            # Deleting the 'Year' column
+            monthly_avg_Ort1_2_df = monthly_avg_Ort1_2_df.drop(columns='Year')
+
+            #Jetzt drehen wir das ganze für den Chart
+            monthly_avg_Ort1_2_df_T = monthly_avg_Ort1_2_df.T
+
+            # Dropping the first row by position
+            #monthly_avg_Ort1_2_df_T = monthly_avg_Ort1_2_df_T.drop(monthly_avg_Ort1_2_df_T.index[0])
+
+
+
+
+            #st.write("monthly_avg_Ort1_2_df_T: ",monthly_avg_Ort1_2_df_T)
+
+            st.subheader("")
+            st.subheader(str(data_Ort1_ChartVariablenAuswahl) + "  per Month and Year in " + Ortseingabe1 + " and " + Ortseingabe2)
+
+            # User selects the chart type
+            selectboxlayoutCompare1, selectboxlayoutCompare2 = st.columns([20, 80])
+            with selectboxlayoutCompare1:
+                chart_type = st.selectbox('Select chart type', ['Line Chart', 'Bar Chart'])
+            with selectboxlayoutCompare2:
+                st.write("")
+
+
+            # Plot the data using Plotly based on the selected chart type
+            if chart_type == 'Line Chart':
+                figPlotlyChartmonthly_avg_Ort1_2= px.line(monthly_avg_Ort1_2_df_T, x=monthly_avg_Ort1_2_df_T.index, y=monthly_avg_Ort1_2_df_T.columns,
+                                              line_shape='spline', markers=True)
+            else:
+                figPlotlyChartmonthly_avg_Ort1_2 = px.bar(monthly_avg_Ort1_2_df_T, x=monthly_avg_Ort1_2_df_T.index, y=monthly_avg_Ort1_2_df_T.columns,
+                                             barmode='group')
+
+            # Change grid color and axis colors
+            figPlotlyChartmonthly_avg_Ort1_2.update_xaxes(showline=True, linewidth=0.1, linecolor='Black', gridcolor='Black')
+            figPlotlyChartmonthly_avg_Ort1_2.update_yaxes(showline=True, linewidth=0.1, linecolor='Black', gridcolor='Black')
+
+            st.plotly_chart(figPlotlyChartmonthly_avg_Ort1_2, use_container_width=True)
+            
+            with st.expander("Table with Values per Location, Year and Month"):
+                st.write("monthly_avg_Ort1_2_df: ",monthly_avg_Ort1_2_df)
+
+
+            #Chart with mean values per Momth of all years
+            total_avg_Ort1_2_df_T = total_avg_Ort1_2_df.T
+
+            #st.write(total_avg_Ort1_2_df_T)
+            # Convert the list of selected years to a nicely formatted string
+            selected_years_str = ', '.join(selected_years)
+
+            #st.subheader("Average values per Month measured " + str(selected_years))
+            st.subheader(str(data_Ort1_ChartVariablenAuswahl) + " in "+ Ortseingabe1 + " and " + Ortseingabe2 + " per Month measured " + str(selected_years_str))
+
+            # User selects the chart type
+            selectboxlayoutTotalCompare1, selectboxlayoutTotalCompare2 = st.columns([20, 80])
+            with selectboxlayoutTotalCompare1:
+                chart_type = st.selectbox('Select chart type', ['Line Chart', 'Bar Chart'],key="Total Compare")
+            with selectboxlayoutTotalCompare2:
+                st.write("")
+
+
+            # Plot the data using Plotly based on the selected chart type
+            if chart_type == 'Line Chart':
+                figPlotlyChartmonthly_Totalavg_Ort1_2= px.line(total_avg_Ort1_2_df_T, x=total_avg_Ort1_2_df_T.index, y=total_avg_Ort1_2_df_T.columns,
+                                              line_shape='spline', markers=True)
+            else:
+                figPlotlyChartmonthly_Totalavg_Ort1_2 = px.bar(total_avg_Ort1_2_df_T, x=total_avg_Ort1_2_df_T.index, y=total_avg_Ort1_2_df_T.columns,
+                                             barmode='group')
+
+            # Change grid color and axis colors
+            figPlotlyChartmonthly_Totalavg_Ort1_2.update_xaxes(showline=True, linewidth=0.1, linecolor='Black', gridcolor='Black')
+            figPlotlyChartmonthly_Totalavg_Ort1_2.update_yaxes(showline=True, linewidth=0.1, linecolor='Black', gridcolor='Black')
+
+            st.plotly_chart(figPlotlyChartmonthly_Totalavg_Ort1_2, use_container_width=True)
+
+            with st.expander("Table with Total average Values per Location and Month"):
+                st.write("total_avg_Ort1_2_df_T: ",total_avg_Ort1_2_df_T)
