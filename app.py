@@ -8,6 +8,7 @@
 # 2024.06.18.23 meanvalues comparison
 # 2024.06.23.12 mit monthly historische Comparison
 # 2024.06.30.20 mit vielen Updates bei historische Comparison
+# 2024.07.01.10 kleine layoutanpassungen hist comparison
 
 import streamlit as st
 import pandas as pd
@@ -1995,7 +1996,7 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
             with historicalDateCompareCol2:
-                startInputCompareDate = st.date_input("Start Date", date(2023, 1, 1), key="startCompare")
+                startInputCompareDate = st.date_input("Start Date", date(2020, 1, 1), key="startCompare")
 
 
             with historicalDateCompareCol3:
@@ -2245,8 +2246,8 @@ if st.session_state.ortsEingabeSpeicher != "":
 
             #st.write("monthly_avg_Ort1_2_df_T: ",monthly_avg_Ort1_2_df_T)
 
-            st.subheader("")
-            st.subheader(str(data_Ort1_ChartVariablenAuswahl) + "  per Month and Year in " + Ortseingabe1 + " and " + Ortseingabe2)
+            st.divider()
+            st.subheader(str(data_Ort1_ChartVariablenAuswahl) + "  per Month per Year in " + Ortseingabe1 + " and " + Ortseingabe2)
 
             # User selects the chart type
             selectboxlayoutCompare1, selectboxlayoutCompare2 = st.columns([20, 80])
