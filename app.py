@@ -2001,7 +2001,7 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
             with historicalDateCompareCol3:
-                endInputCompareDate = st.date_input("End Date", date(2023, 12, 31), key="endCompare")
+                endInputCompareDate = st.date_input("End Date", date(2025, 12, 31), key="endCompare")
 
             st.subheader("")
 
