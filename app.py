@@ -265,7 +265,7 @@ with st.sidebar.form("Settings"):  #############################################
         startInput = st.date_input("Start Date", date(2004, 1, 1), key="start")
         # startInput = st.date_input("Start Date",last_year, key="start")
 
-        endInput = st.date_input("End Date", date(2025, 12, 31), key="end")
+        endInput = st.date_input("End Date", date(2026, 10, 16), key="end")
         # endInput = st.date_input("End Date", today, key="end")
 
         heightInput = st.number_input('Elevation (default - elevation of weather station)',
@@ -902,7 +902,7 @@ if st.session_state.ortsEingabeSpeicher != "":
                 options=data_Year_df.columns, default="Average Temperatures")
 
             compareYearsOptions = data.Year.unique().tolist()
-            compareYearsDefault = [2021, 2022, 2023, 2024, 2025]
+            compareYearsDefault = [2021, 2022, 2023, 2024, 2025, 2026]
 
             compareYearsSelection = st.multiselect(
                 "Choose Years to compare",
@@ -2001,7 +2001,7 @@ if st.session_state.ortsEingabeSpeicher != "":
 
 
             with historicalDateCompareCol3:
-                endInputCompareDate = st.date_input("End Date", date(2025, 12, 31), key="endCompare")
+                endInputCompareDate = st.date_input("End Date", date(2026, 10, 16), key="endCompare")
 
             st.subheader("")
 
