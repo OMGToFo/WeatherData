@@ -10,6 +10,7 @@
 # 2024.06.30.20 mit vielen Updates bei historische Comparison
 # 2024.07.01.10 kleine layoutanpassungen hist comparison
 # 2026.04.01.14 aktualisierung jahresrange
+# 2026.10.16.12 aktualisierung jahresrange
 
 import streamlit as st
 import pandas as pd
