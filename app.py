@@ -15,11 +15,11 @@
 import streamlit as st
 import pandas as pd
 from datetime import date, datetime
-from meteostat import Point, Daily
+from meteostat import Stations, Point, Daily
 
 # 2026.10.28 Force Meteostat to use a temporary system directory or clear its path
 import tempfile
-from meteostat import Stations
+#from meteostat import Stations
 Stations.cache_dir = os.path.join(tempfile.gettempdir(), 'meteostat_cache')
 
 
